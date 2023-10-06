@@ -8,19 +8,21 @@ module.exports = {
     themes: [
       {
         scaffoldEth: {
-          primary: "#93BBF5",
-          "primary-content": "#212638",
-          secondary: "#DAE8FF",
-          "secondary-content": "#212638",
-          accent: "#93BBFB",
-          "accent-content": "#212638",
-          neutral: "#212638",
+
+          primary: "#008c62", // dark green
+          "primary-content": "#F9FBFF", //White
+          secondary: "#008c62",
+          "secondary-content": "#F9FBFF",
+          accent: "#008c62",
+          "accent-content": "#F9FBFF",
+          neutral: "#02050f",
+
           "neutral-content": "#ffffff",
-          "base-100": "#ffffff",
-          "base-200": "#f4f8ff",
-          "base-300": "#DAE8FF",
-          "base-content": "#212638",
-          info: "#93BBFB",
+          "base-100": "#01e7a0", // light green
+          "base-200": "#f4f8ff", // bg (white)
+          "base-300": "#01e7a0",
+          "base-content": "#02050f",
+          info: "#adfa91",
           success: "#34EEB6",
           warning: "#FFCF72",
           error: "#FF8863",
@@ -34,19 +36,19 @@ module.exports = {
       },
       {
         scaffoldEthDark: {
-          primary: "#212638",
-          "primary-content": "#F9FBFF",
-          secondary: "#323f61",
+          primary: "#01e7a0", // light green
+          "primary-content": "#F9FBFF", //White
+          secondary: "#01e7a0",
           "secondary-content": "#F9FBFF",
-          accent: "#4969A6",
+          accent: "#01e7a0",
           "accent-content": "#F9FBFF",
           neutral: "#F9FBFF",
           "neutral-content": "#385183",
-          "base-100": "#385183",
-          "base-200": "#2A3655",
-          "base-300": "#212638",
+          "base-100": "#008c62", // dark green
+          "base-200": "#040d01", // bg (black)
+          "base-300": "#008c62",
           "base-content": "#F9FBFF",
-          info: "#385183",
+          info: "#adfa91",
           success: "#34EEB6",
           warning: "#FFCF72",
           error: "#FF8863",
@@ -56,32 +58,6 @@ module.exports = {
           ".tooltip": {
             "--tooltip-tail": "6px",
             "--tooltip-color": "hsl(var(--p))",
-          },
-        },
-      },
-      {
-        exampleUi: {
-          primary: "#000000",
-          "primary-content": "#ffffff",
-          secondary: "#FF6644",
-          "secondary-content": "#212638",
-          accent: "#93BBFB",
-          "accent-content": "#212638",
-          neutral: "#f3f3f3",
-          "neutral-content": "#212638",
-          "base-100": "#ffffff",
-          "base-200": "#f1f1f1",
-          "base-300": "#d0d0d0",
-          "base-content": "#212638",
-          info: "#93BBFB",
-          success: "#34EEB6",
-          warning: "#FFCF72",
-          error: "#FF8863",
-
-          "--rounded-btn": "9999rem",
-
-          ".tooltip": {
-            "--tooltip-tail": "6px",
           },
         },
       },
