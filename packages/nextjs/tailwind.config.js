@@ -8,6 +8,7 @@ module.exports = {
     themes: [
       {
         scaffoldEth: {
+
           primary: "#008c62", // dark green
           "primary-content": "#F9FBFF", //White
           secondary: "#008c62",
@@ -15,6 +16,7 @@ module.exports = {
           accent: "#008c62",
           "accent-content": "#F9FBFF",
           neutral: "#02050f",
+
           "neutral-content": "#ffffff",
           "base-100": "#01e7a0", // light green
           "base-200": "#f4f8ff", // bg (white)
