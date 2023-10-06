@@ -266,7 +266,7 @@ export default function CreateInvoice() {
  
           </div>
           <div></div>
-         
+          <pre>{JSON.stringify(requestData, undefined, 2)}</pre>
         </div>
       </div>
     </div>
