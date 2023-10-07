@@ -17,6 +17,26 @@ import { Web3SignatureProvider } from "@requestnetwork/web3-signature";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { useAccount, useNetwork, useSwitchNetwork, useWalletClient } from "wagmi";
 
+const calculateStatus = (
+  state: string,
+  expectedAmount: bigint,
+  balance: bigint
+) => {
+  if (balance >= expectedAmount) {
+    return "Paid";
+  }
+  if (state === Types.RequestLogic.STATE.ACCEPTED) {
+    return "Accepted";
+  } else if (state === Types.RequestLogic.STATE.CANCELED) {
+    return "Canceled";
+  } else if (state === Types.RequestLogic.STATE.CREATED) {
+    return "Created";
+  } else if (state === Types.RequestLogic.STATE.PENDING) {
+    return "Pending";
+  }
+};
+
+
 enum APP_STATUS {
   AWAITING_INPUT = "awaiting input",
   SUBMITTING = "submitting",
@@ -144,97 +164,11 @@ export default function Home() {
     approve();
   }
 
-  async function createRequest() {
-    const signatureProvider = new Web3SignatureProvider(walletClient);
-    const requestClient = new RequestNetwork({
-      nodeConnectionConfig: {
-        baseURL: storageChains.get(storageChain)!.gateway,
-      },
-      signatureProvider,
-    });
-    const requestCreateParameters: Types.ICreateRequestParameters = {
-      requestInfo: {
-        currency: {
-          type: currencies.get(currency)!.type,
-          value: currencies.get(currency)!.value,
-          network: currencies.get(currency)!.network,
-        },
-        expectedAmount: parseUnits(expectedAmount as `${number}`, currencies.get(currency)!.decimals).toString(),
-        payee: {
-          type: Types.Identity.TYPE.ETHEREUM_ADDRESS,
-          value: address as string,
-        },
-        timestamp: Utils.getCurrentTimestampInSecond(),
-      },
-      paymentNetwork: {
-        id: Types.Extension.PAYMENT_NETWORK_ID.ERC20_FEE_PROXY_CONTRACT,
-        parameters: {
-          paymentNetworkName: currencies.get(currency)!.network,
-          paymentAddress: paymentRecipient || address,
-          feeAddress: zeroAddress,
-          feeAmount: "0",
-        },
-      },
-      contentData: {
-        // Tip: Consider using rnf_invoice v0.0.3 format from @requestnetwork/data-format
-        reason: reason,
-        dueDate: dueDate,
-      },
-      signer: {
-        type: Types.Identity.TYPE.ETHEREUM_ADDRESS,
-        value: address as string,
-      },
-    };
 
-    if (payerIdentity.length > 0) {
-      requestCreateParameters.requestInfo.payer = {
-        type: Types.Identity.TYPE.ETHEREUM_ADDRESS,
-        value: payerIdentity,
-      };
-    }
 
-    try {
-      setStatus(APP_STATUS.PERSISTING_TO_IPFS);
-      const request = await requestClient.createRequest(requestCreateParameters);
 
-      setStatus(APP_STATUS.PERSISTING_ON_CHAIN);
-      setRequestData(request.getData());
-      const confirmedRequestData = await request.waitForConfirmation();
 
-      setStatus(APP_STATUS.REQUEST_CONFIRMED);
-      setRequestData(confirmedRequestData);
-    } catch (err) {
-      setStatus(APP_STATUS.ERROR_OCCURRED);
-      alert(err);
-    }
-  }
 
-  function canSubmit() {
-    return (
-      status !== APP_STATUS.SUBMITTING &&
-      !isDisconnected &&
-      !isConnecting &&
-      !isError &&
-      !isLoading &&
-      storageChain.length > 0 &&
-      // Payment Recipient is empty || isAddress
-      (paymentRecipient.length === 0 || (paymentRecipient.startsWith("0x") && paymentRecipient.length === 42)) &&
-      // Payer is empty || isAddress
-      (payerIdentity.length === 0 || (payerIdentity.startsWith("0x") && payerIdentity.length === 42)) &&
-      expectedAmount.length > 0 &&
-      currency.length > 0
-    );
-  }
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!canSubmit()) {
-      return;
-    }
-    setRequestData(undefined);
-    setStatus(APP_STATUS.SUBMITTING);
-    createRequest();
-  }
 
   function handleClear(_: React.MouseEvent<HTMLButtonElement>) {
     setRequestData(undefined);
@@ -243,17 +177,22 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-    <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2">
-        <h3 className="text-center text-xl font-bold mb-4">Pay an invoice</h3>
-
+    <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl">
+        <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
+        <p className="text-xs">Invoice id: {invoiceid}</p>
         <div className="flex justify-between mb-2">
             <span className="font-medium">From:</span>
-            <span>{requestData?.payee?.value}</span>
+        
+            <span>
+            {requestData?.payee?.value}
+            </span>
         </div>
 
         <div className="flex justify-between mb-2">
             <span className="font-medium">To:</span>
-            <span>{requestData?.payer?.value}</span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
+     
+            <span>
+            {requestData?.extensionsData[0].parameters?.paymentAddress}</span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
         </div>
 
         <div className="flex justify-between">
@@ -264,7 +203,23 @@ export default function Home() {
             <span className="font-medium">Reason:</span>
             <span>{requestData?.contentData.reason}</span>
         </div>
-        <h4 className="text-lg font-semibold my-4">Get Testnet Funds</h4>
+
+        <div className="flex justify-between">
+            <span className="font-medium">Status:</span>
+            <span>
+            {calculateStatus(
+          requestData?.state as any,
+          BigInt(requestData?.expectedAmount as any),
+          BigInt(requestData?.balance?.balance || 0)
+        ) }
+            </span>
+        </div>
+
+
+      
+      
+        { requestData?.payer?.value === address ? 
+
         <ul className="list-disc pl-5 mb-4">
             <li className="mb-2">
                 <span>Get FAU on Goerli using the </span>
@@ -279,7 +234,10 @@ export default function Home() {
                 </Link>
             </li>
         </ul>
-
+: null  }
+       {
+       requestData?.payer?.value === address ? 
+       <div>
         <h4 className="text-lg font-semibold my-4">Pay a request</h4>
        
         <button
@@ -311,6 +269,8 @@ export default function Home() {
         <p className="mb-2">App status: {status}</p>
         <p className="mb-4">Request state: {requestData?.state}</p>
         <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre>
+        </div>
+          : null}
     </div>
 </div>
 
