@@ -47,9 +47,9 @@ export const Header = () => {
         </NavLink>
       </li>
       <li>
-        <NavLink href="/profile">
+        <NavLink href="/dashboard">
           <UserOutlined  className="h-4 w-4" />
-         Profile
+         Dashboard
         </NavLink>
       </li>
      

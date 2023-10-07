@@ -9,7 +9,7 @@ import PendingInvoice from '~~/components/PendingInvoice';
 
 
 
-const Profile = () => {
+const Dashboard = () => {
   const [activeButton, setActiveButton] = useState('pendingInvoices');
 
 const {address} = useAccount();
@@ -181,4 +181,4 @@ const calculateStatus = (
   );
 }
 
-export default Profile;
+export default Dashboard;
