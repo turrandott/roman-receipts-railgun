@@ -23,13 +23,12 @@ enum APP_STATUS {
 export default function CreateInvoice() {
   const [storageChain, setStorageChain] = useState("100");
   const [expectedAmount, setExpectedAmount] = useState("");
-<<<<<<< HEAD
+
   const [currency, setCurrency] = useState(
     "137_0xc2132D05D31c914a87C6611C10748AEb04B58e8F"
   );
-=======
-  const [currency, setCurrency] = useState("5_0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc");
->>>>>>> 9887e2402bea2693b6ada565be1c5c7f8cb81c3f
+
+
   const [paymentRecipient, setPaymentRecipient] = useState("");
   const [zkAddressRecipient, setZkAddressRecipient] = useState("");
   const [payerIdentity, setPayerIdentity] = useState("");
@@ -152,11 +151,7 @@ export default function CreateInvoice() {
             Payee Identity *
             <ConnectButton chainStatus="none" showBalance={false} />
           </label>
-<<<<<<< HEAD
-{/*   
-=======
 
->>>>>>> 9887e2402bea2693b6ada565be1c5c7f8cb81c3f
           <label className="block">
             Storage Chain *
             <select
@@ -171,14 +166,8 @@ export default function CreateInvoice() {
                 </option>
               ))}
             </select>
-<<<<<<< HEAD
-          </label> */}
-  
-=======
-          </label>
-
->>>>>>> 9887e2402bea2693b6ada565be1c5c7f8cb81c3f
-          <label className="block">
+            </label>
+       <label className="block">
             Amount *
             <input
               type="number"
@@ -204,35 +193,15 @@ export default function CreateInvoice() {
               ))}
             </select>
           </label>
-<<<<<<< HEAD
-  
-            {/* <label className="block">
-              Payment Recipient
-              <input
-                type="text"
-                name="payment-recipient"
-                placeholder={address}
-                onChange={(e) => setPaymentRecipient(e.target.value)}
-                className="form-input mt-2 block w-full input border-2 border-secondary"
-              />
-            </label> */}
-  
-=======
-
->>>>>>> 9887e2402bea2693b6ada565be1c5c7f8cb81c3f
           <label className="block">
             ZkAddress Recipient
             <input
               type="text"
-<<<<<<< HEAD
+
               name="payment-recipient-zkaddress"
               placeholder="0zk..."
               onChange={(e) => setZkAddressRecipient(e.target.value)}
-=======
-              name="payment-recipient"
-              placeholder={address}
-              onChange={e => setPaymentRecipient(e.target.value)}
->>>>>>> 9887e2402bea2693b6ada565be1c5c7f8cb81c3f
+
               className="form-input mt-2 block w-full input border-2 border-secondary"
             />
           </label>
