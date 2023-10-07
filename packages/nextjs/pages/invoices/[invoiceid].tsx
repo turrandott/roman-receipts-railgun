@@ -308,8 +308,7 @@ export default function Home() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
     <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl mt-12">
         <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
-        <p className="text-xs hidden lg:block">Invoice id: {invoiceid?.slice(0, 12) + '...' + invoiceid?.slice(59,65)}</p>
-        <p className="text-xs block lg:hidden">Invoice id: {invoiceid}</p>
+        <p className="text-xs">Invoice id: {invoiceid?.slice(0, 12) + '...' + invoiceid?.slice(59,65)}</p>
         <div className="flex justify-between mb-2">
             <span className="font-medium">From:</span>
         
@@ -504,49 +503,13 @@ export default function Home() {
         <p className="mb-2">App status: {status}</p>
         <p className="mb-4">Request state: {requestData?.state}</p>
         </div>
-          : null} {
-       requestData?.payee?.value === address ? 
-       <div>
-        <h4 className="text-lg font-semibold my-4">Manage a request</h4>
-       
-        <button
-            disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
-            onClick={() => switchNetwork?.(chains.find(chain => chain.network === requestData?.currencyInfo.network)?.id)}
-            className="btn w-full mb-4"
-        >
-            Switch to Payment Chain: {requestData?.currencyInfo.network}
-            {isSwitchNetworkLoading && " (switching)"}
-        </button>
-
-        <button type="button" onClick={handleApproveBet} className="btn w-full mb-4">
-            Approve
-        </button>
-        <div className="text-red-500 mb-4">
-            {!switchNetwork && "Programmatic switch network not supported by wallet."}
-        </div>
-        <div className="text-red-500 mb-4">
-            {error && error.message}
-        </div>
-
-        <div>
-        <button type="button" onClick={handleAcceptPayment} className="btn btn-primary" style={{ flex: 1, marginRight: '5px' }}>
-            ACCEPT
-        </button>
-        <button type="button" onClick={handleDoubleYourIncome} className="btn btn-primary" style={{ flex: 1}}>
-            DOUBLE
-        </button>
-        </div>
-
-        <h4 className="text-lg font-semibold my-4">Request info</h4>
-     
-        <p className="mb-2">App status: {status}</p>
-        <p className="mb-4">Request state: {requestData?.state}</p>
+          : null} 
+    
 
         </div>
-          : null}
-
+      
     </div>
-</div>
+
 
   );
 }
