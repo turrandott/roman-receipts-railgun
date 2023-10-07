@@ -4,6 +4,7 @@ import { RequestNetwork, Types } from "@requestnetwork/request-client.js";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import PendingInvoice from "~~/components/PendingInvoice";
+import Link from "next/link";
 
 // EDIT THIS TO SELECT THE USER"S ADDRESS
 
@@ -11,9 +12,6 @@ const Dashboard = () => {
   const [activeButton, setActiveButton] = useState("pendingInvoices");
 
   const { address } = useAccount();
-
-  const [requestsToPay, setRequestsToPay] = useState([]);
-  const [requestsToRecieve, setRequestsTo] = useState([]);
 
   //get all history
   const [totalRequestHistory, SetTotalRequestHistory] = useState<(Types.IRequestDataWithEvents | undefined)[]>();
@@ -117,10 +115,11 @@ const Dashboard = () => {
                   .map((request: any) => (
                     <tr key={request.timestamp}>
                       <td>{request.timestamp}</td>
-
                       <td >
-                        {request.requestId.slice(0, 4)}...
-                        {request.requestId.slice(62, 66)}
+                        <Link href={`/invoices/${request.requestId}`}>
+                          {request.requestId.slice(0, 4)}...
+                          {request.requestId.slice(62, 66)}
+                        </Link>
                       </td>
                       <td>
                         {request.payer?.value.slice(0, 5)}...
