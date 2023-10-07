@@ -2,13 +2,11 @@
 module.exports = {
   content: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}", "./utils/**/*.{js,ts,jsx,tsx}"],
   plugins: [require("daisyui")],
-  darkTheme: "scaffoldEthDark",
   // DaisyUI theme colors
   daisyui: {
     themes: [
       {
         scaffoldEth: {
-
           primary: "#008c62", // dark green
           "primary-content": "#F9FBFF", //White
           secondary: "#008c62",
@@ -31,33 +29,6 @@ module.exports = {
 
           ".tooltip": {
             "--tooltip-tail": "6px",
-          },
-        },
-      },
-      {
-        scaffoldEthDark: {
-          primary: "#01e7a0", // light green
-          "primary-content": "#F9FBFF", //White
-          secondary: "#01e7a0",
-          "secondary-content": "#F9FBFF",
-          accent: "#01e7a0",
-          "accent-content": "#F9FBFF",
-          neutral: "#F9FBFF",
-          "neutral-content": "#385183",
-          "base-100": "#008c62", // dark green
-          "base-200": "#040d01", // bg (black)
-          "base-300": "#008c62",
-          "base-content": "#F9FBFF",
-          info: "#adfa91",
-          success: "#34EEB6",
-          warning: "#FFCF72",
-          error: "#FF8863",
-
-          "--rounded-btn": "9999rem",
-
-          ".tooltip": {
-            "--tooltip-tail": "6px",
-            "--tooltip-color": "hsl(var(--p))",
           },
         },
       },
