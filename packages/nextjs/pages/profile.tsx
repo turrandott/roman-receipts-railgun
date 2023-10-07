@@ -3,13 +3,14 @@ import { RequestNetwork, Types } from "@requestnetwork/request-client.js";
 
 import { formatUnits } from "viem";
 import { useAccount } from 'wagmi';
+import PendingInvoice from '~~/components/PendingInvoice';
 
 // EDIT THIS TO SELECT THE USER'S ADDRESS
 
 
 
 const Profile = () => {
-  const [activeButton, setActiveButton] = useState('');
+  const [activeButton, setActiveButton] = useState('pendingInvoices');
 
 const {address} = useAccount();
   //get all history
@@ -30,7 +31,7 @@ useEffect(() => {
     .then((requests) => {
         SetTotalRequestHistory(requests.map((request) => request.getData()));
     });
-}, [address]);
+}, [address, activeButton]);
 
 const calculateStatus = (
     state: string,
@@ -132,6 +133,25 @@ const calculateStatus = (
      
     </div>
     }
+
+{activeButton === "pendingInvoices" &&
+  <div className="App p-8 bg-gray-100 min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {totalRequestHistory
+        ?.filter((request: any) => {
+          return calculateStatus(
+            request.state,
+            BigInt(request.expectedAmount),
+            BigInt(request.balance?.balance || 0)
+          ) !== "Paid";
+        })
+        .map((request: any) => (
+          <PendingInvoice request={request} key={request.timestamp} />
+        ))}
+    </div>
+  </div>
+}
+
   
     </div>
   );
