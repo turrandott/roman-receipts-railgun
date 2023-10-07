@@ -17,6 +17,26 @@ import { Web3SignatureProvider } from "@requestnetwork/web3-signature";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { useAccount, useNetwork, useSwitchNetwork, useWalletClient } from "wagmi";
 
+const calculateStatus = (
+  state: string,
+  expectedAmount: bigint,
+  balance: bigint
+) => {
+  if (balance >= expectedAmount) {
+    return "Paid";
+  }
+  if (state === Types.RequestLogic.STATE.ACCEPTED) {
+    return "Accepted";
+  } else if (state === Types.RequestLogic.STATE.CANCELED) {
+    return "Canceled";
+  } else if (state === Types.RequestLogic.STATE.CREATED) {
+    return "Created";
+  } else if (state === Types.RequestLogic.STATE.PENDING) {
+    return "Pending";
+  }
+};
+
+
 enum APP_STATUS {
   AWAITING_INPUT = "awaiting input",
   SUBMITTING = "submitting",
@@ -183,6 +203,21 @@ export default function Home() {
             <span className="font-medium">Reason:</span>
             <span>{requestData?.contentData.reason}</span>
         </div>
+
+        <div className="flex justify-between">
+            <span className="font-medium">Status:</span>
+            <span>
+            {calculateStatus(
+          requestData?.state as any,
+          BigInt(requestData?.expectedAmount as any),
+          BigInt(requestData?.balance?.balance || 0)
+        ) }
+            </span>
+        </div>
+
+
+      
+      
         { requestData?.payer?.value === address ? 
 
         <ul className="list-disc pl-5 mb-4">

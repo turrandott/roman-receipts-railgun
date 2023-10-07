@@ -1,9 +1,16 @@
 import Link from 'next/link';
 import React from 'react'
+import { useAccount } from 'wagmi';
 
 const PendingInvoice: React.FC<{ request: any }> = ({ request }) => {
+
+    const {address} = useAccount();
+
+    const background = request.payer.value === address 
+    ? 'bg-yellow-100' : 'bg-white'
+
     return (
-        <div className="bg-white p-4 rounded-lg shadow-md text-center space-y-5">
+        <div className={`${background} p-4 rounded-lg shadow-md text-center space-y-5`}>
           <p className="text-sm mb-2">
             <b>Date:</b> {request.contentData.dueDate}
           </p>
