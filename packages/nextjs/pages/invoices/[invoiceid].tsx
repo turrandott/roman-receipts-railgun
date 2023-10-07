@@ -243,9 +243,9 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-    <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2">
-        <h3 className="text-center text-xl font-bold mb-4">Pay an invoice</h3>
-
+    <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl">
+        <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
+        <p className="text-xs">Invoice id: {invoiceid}</p>
         <div className="flex justify-between mb-2">
             <span className="font-medium">From:</span>
             <span>{requestData?.payee?.value}</span>
@@ -264,7 +264,8 @@ export default function Home() {
             <span className="font-medium">Reason:</span>
             <span>{requestData?.contentData.reason}</span>
         </div>
-        <h4 className="text-lg font-semibold my-4">Get Testnet Funds</h4>
+        { requestData?.payer?.value === address ? 
+
         <ul className="list-disc pl-5 mb-4">
             <li className="mb-2">
                 <span>Get FAU on Goerli using the </span>
@@ -279,7 +280,10 @@ export default function Home() {
                 </Link>
             </li>
         </ul>
-
+: null  }
+       {
+       requestData?.payer?.value === address ? 
+       <div>
         <h4 className="text-lg font-semibold my-4">Pay a request</h4>
        
         <button
@@ -311,6 +315,8 @@ export default function Home() {
         <p className="mb-2">App status: {status}</p>
         <p className="mb-4">Request state: {requestData?.state}</p>
         <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre>
+        </div>
+          : null}
     </div>
 </div>
 
