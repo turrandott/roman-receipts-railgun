@@ -1,19 +1,15 @@
 "use client";
 
-import "@rainbow-me/rainbowkit/styles.css";
-import styles from "../styles/page.module.css";
 import { useState } from "react";
-import { parseUnits, zeroAddress } from "viem";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useWalletClient, useAccount } from "wagmi";
 import { currencies } from "../config/currency";
 import { storageChains } from "../config/storage-chain";
-import {
-  RequestNetwork,
-  Types,
-  Utils,
-} from "@requestnetwork/request-client.js";
+import styles from "../styles/page.module.css";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import "@rainbow-me/rainbowkit/styles.css";
+import { RequestNetwork, Types, Utils } from "@requestnetwork/request-client.js";
 import { Web3SignatureProvider } from "@requestnetwork/web3-signature";
+import { parseUnits, zeroAddress } from "viem";
+import { useAccount, useWalletClient } from "wagmi";
 
 enum APP_STATUS {
   AWAITING_INPUT = "awaiting input",
@@ -27,9 +23,13 @@ enum APP_STATUS {
 export default function CreateInvoice() {
   const [storageChain, setStorageChain] = useState("100");
   const [expectedAmount, setExpectedAmount] = useState("");
+<<<<<<< HEAD
   const [currency, setCurrency] = useState(
     "137_0xc2132D05D31c914a87C6611C10748AEb04B58e8F"
   );
+=======
+  const [currency, setCurrency] = useState("5_0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc");
+>>>>>>> 9887e2402bea2693b6ada565be1c5c7f8cb81c3f
   const [paymentRecipient, setPaymentRecipient] = useState("");
   const [zkAddressRecipient, setZkAddressRecipient] = useState("");
   const [payerIdentity, setPayerIdentity] = useState("");
@@ -39,8 +39,7 @@ export default function CreateInvoice() {
   const [status, setStatus] = useState(APP_STATUS.AWAITING_INPUT);
   const { data: walletClient, isError, isLoading } = useWalletClient();
   const { address, isConnecting, isDisconnected } = useAccount();
-  const [requestData, setRequestData] =
-    useState<Types.IRequestDataWithEvents>();
+  const [requestData, setRequestData] = useState<Types.IRequestDataWithEvents>();
 
   async function createRequest() {
     const signatureProvider = new Web3SignatureProvider(walletClient);
@@ -60,10 +59,7 @@ export default function CreateInvoice() {
           value: currencies.get(currency)!.value,
           network: currencies.get(currency)!.network,
         },
-        expectedAmount: parseUnits(
-          expectedAmount as `${number}`,
-          currencies.get(currency)!.decimals
-        ).toString(),
+        expectedAmount: parseUnits(expectedAmount as `${number}`, currencies.get(currency)!.decimals).toString(),
         payee: {
           type: Types.Identity.TYPE.ETHEREUM_ADDRESS,
           value: address as string,
@@ -100,12 +96,8 @@ export default function CreateInvoice() {
 
     try {
       setStatus(APP_STATUS.PERSISTING_TO_IPFS);
-      const request = await requestClient.createRequest(
-        requestCreateParameters
-      );
+      const request = await requestClient.createRequest(requestCreateParameters);
 
-
-      
       setStatus(APP_STATUS.PERSISTING_ON_CHAIN);
       setRequestData(request.getData());
       const confirmedRequestData = await request.waitForConfirmation();
@@ -128,12 +120,9 @@ export default function CreateInvoice() {
       !isLoading &&
       storageChain.length > 0 &&
       // Payment Recipient is empty || isAddress
-      (paymentRecipient.length === 0 ||
-        (paymentRecipient.startsWith("0x") &&
-          paymentRecipient.length === 42)) &&
+      (paymentRecipient.length === 0 || (paymentRecipient.startsWith("0x") && paymentRecipient.length === 42)) &&
       // Payer is empty || isAddress
-      (payerIdentity.length === 0 ||
-        (payerIdentity.startsWith("0x") && payerIdentity.length === 42)) &&
+      (payerIdentity.length === 0 || (payerIdentity.startsWith("0x") && payerIdentity.length === 42)) &&
       expectedAmount.length > 0 &&
       currency.length > 0
     );
@@ -145,33 +134,34 @@ export default function CreateInvoice() {
       return;
     }
     setRequestData(undefined);
-  
+
     setStatus(APP_STATUS.SUBMITTING);
     setLoading(true);
     createRequest();
   }
 
-  function handleClear(_: React.MouseEvent<HTMLButtonElement>) {
-    setRequestData(undefined);
-    setStatus(APP_STATUS.AWAITING_INPUT);
-  }
+ 
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 pt-12">
       <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2">
         <h3 className="text-center text-xl font-bold mb-4">Create a invoice</h3>
-       
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block">
             Payee Identity *
-            <ConnectButton chainStatus="none" showBalance={false}  />
+            <ConnectButton chainStatus="none" showBalance={false} />
           </label>
+<<<<<<< HEAD
 {/*   
+=======
+
+>>>>>>> 9887e2402bea2693b6ada565be1c5c7f8cb81c3f
           <label className="block">
             Storage Chain *
             <select
               name="storage-chain"
-              onChange={(e) => setStorageChain(e.target.value)}
+              onChange={e => setStorageChain(e.target.value)}
               defaultValue={storageChain}
               className="form-select mt-2 block w-full input border-2 border-secondary"
             >
@@ -181,24 +171,29 @@ export default function CreateInvoice() {
                 </option>
               ))}
             </select>
+<<<<<<< HEAD
           </label> */}
   
+=======
+          </label>
+
+>>>>>>> 9887e2402bea2693b6ada565be1c5c7f8cb81c3f
           <label className="block">
             Amount *
             <input
               type="number"
               name="expected-amount"
               step="any"
-              onChange={(e) => setExpectedAmount(e.target.value)}
+              onChange={e => setExpectedAmount(e.target.value)}
               className="form-input mt-2 block w-full input border-2 border-secondary"
             />
           </label>
-  
+
           <label className="block">
             Currency *
             <select
               name="currency"
-              onChange={(e) => setCurrency(e.target.value)}
+              onChange={e => setCurrency(e.target.value)}
               defaultValue={currency}
               className="form-select mt-2 block w-full input border-2 border-secondary"
             >
@@ -209,6 +204,7 @@ export default function CreateInvoice() {
               ))}
             </select>
           </label>
+<<<<<<< HEAD
   
             {/* <label className="block">
               Payment Recipient
@@ -221,13 +217,22 @@ export default function CreateInvoice() {
               />
             </label> */}
   
+=======
+
+>>>>>>> 9887e2402bea2693b6ada565be1c5c7f8cb81c3f
           <label className="block">
             ZkAddress Recipient
             <input
               type="text"
+<<<<<<< HEAD
               name="payment-recipient-zkaddress"
               placeholder="0zk..."
               onChange={(e) => setZkAddressRecipient(e.target.value)}
+=======
+              name="payment-recipient"
+              placeholder={address}
+              onChange={e => setPaymentRecipient(e.target.value)}
+>>>>>>> 9887e2402bea2693b6ada565be1c5c7f8cb81c3f
               className="form-input mt-2 block w-full input border-2 border-secondary"
             />
           </label>
@@ -238,51 +243,47 @@ export default function CreateInvoice() {
               type="text"
               name="payer-identity"
               placeholder="0x..."
-              onChange={(e) => setPayerIdentity(e.target.value)}
+              onChange={e => setPayerIdentity(e.target.value)}
               className="form-input mt-2 block w-full input border-2  border-secondary"
             />
           </label>
-  
+
           <label className="block">
             Due Date
             <input
               type="date"
               name="due-date"
-              onChange={(e) => setDueDate(e.target.value)}
+              onChange={e => setDueDate(e.target.value)}
               className="form-input mt-2 block w-full input border-2 border-secondary"
             />
           </label>
-  
+
           <label className="block">
             Reason
             <input
               type="text"
               name="reason"
-              onChange={(e) => setReason(e.target.value)}
+              onChange={e => setReason(e.target.value)}
               className=" mt-2 block w-full input border-2 input border-secondary"
             />
           </label>
-  
+
           <button type="submit" disabled={!canSubmit()} className="btn btn-primary w-full mt-4">
             Submit
           </button>
         </form>
-  
+
         <div className="mt-8">
           <h3 className="text-center text-xl font-bold mb-4">Created request</h3>
-          <button type="button" onClick={handleClear} className="btn btn-secondary w-full mb-4">
-            Clear
-          </button>
+  
           <div className="flex">
             <p className="font-bold">{status}</p>
-          <p> {loading && <span className="loading loading-ring loading-xl "></span> }</p>
- 
+            <p> {loading && <span className="loading loading-ring loading-xl "></span>}</p>
           </div>
           <div></div>
-          <pre>{JSON.stringify(requestData, undefined, 2)}</pre>
+          {/* <pre>{JSON.stringify(requestData, undefined, 2)}</pre>*/}
         </div>
       </div>
     </div>
   );
-  
 }

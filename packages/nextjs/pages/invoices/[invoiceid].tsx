@@ -56,6 +56,8 @@ export default function Home() {
   const [storageChain, setStorageChain] = useState("100");
   const [expectedAmount, setExpectedAmount] = useState("");
   const [currency, setCurrency] = useState("137_0xc2132D05D31c914a87C6611C10748AEb04B58e8F");
+  const [confirmationDigits, setConfirmationDigits] = useState("");
+
   const router = useRouter();
   const { invoiceid } = router.query;
 
@@ -185,8 +187,17 @@ export default function Home() {
       const _request = await requestClient.fromRequestId(requestData!.requestId);
       let _requestData = _request.getData();
 
-      const declareReceivedTx = await _request.declareReceivedPayment(_requestData.expectedAmount, "thank you", requestData!.payee!);
+    const ETHEREUM_ADDRESS = "ethereumAddress"
+   const   ETHEREUM_SMART_CONTRACT = "ethereumSmartContract"
 
+
+      const identity = {
+        type: ETHEREUM_ADDRESS,
+        value: requestData?.payee?.value
+      }
+//@ts-ignore
+      const declareReceivedTx = await _request.declareReceivedPayment(_requestData.expectedAmount, "thank you", requestData?.payee)
+      console.log(declareReceivedTx)
       while (_requestData.state != Types.RequestLogic.STATE.ACCEPTED) {
         _requestData = await _request.refresh();
         alert(`state = ${_requestData.state}`);
@@ -197,15 +208,17 @@ export default function Home() {
       setStatus(APP_STATUS.PAYMENT_ACCEPTED);
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
+      console.log
       alert(err);
     }
   }
 
+
+
   function handlePay(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-
-    setStatus(APP_STATUS.PAYING);
-    payTheRequest();
+    //@ts-ignore
+    document.getElementById('confirmation_modal').showModal();
   }
 
   function handleAcceptPayment(e: React.MouseEvent<HTMLButtonElement>) {
@@ -278,29 +291,50 @@ export default function Home() {
 
 
 
-  function handleClear(_: React.MouseEvent<HTMLButtonElement>) {
-    setRequestData(undefined);
-    setStatus(APP_STATUS.AWAITING_INPUT);
+
+
+
+  function handleConfirmation() {
+    //@ts-ignore
+    if (confirmationDigits === address.slice(-6)) {  // Check if the last 6 digits match
+      //@ts-ignore
+      document.getElementById('confirmation_modal').close();  // Close the modal
+      setStatus(APP_STATUS.PAYING);
+      payTheRequest();  // Continue with the payment process
+    } else {
+      // Handle the error, for example, by showing an alert or updating the state to show an error message
+      alert("The digits entered do not match. Please try again.");
+    }
   }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-    <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl">
+    <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl mt-12">
         <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
-        <p className="text-xs">Invoice id: {invoiceid}</p>
+        <p className="text-xs hidden lg:block">Invoice id: {invoiceid?.slice(0, 12) + '...' + invoiceid?.slice(59,65)}</p>
+        <p className="text-xs block lg:hidden">Invoice id: {invoiceid}</p>
         <div className="flex justify-between mb-2">
             <span className="font-medium">From:</span>
         
-            <span>
+        
+            <span className="hidden lg:block">
             {requestData?.payee?.value}
             </span>
+            <span className="block lg:hidden">
+            {requestData?.payee?.value.slice(0,5) + '...' + requestData?.payee?.value.slice(35,41)}
+            </span>
+         
         </div>
 
         <div className="flex justify-between mb-2">
             <span className="font-medium">To:</span>
      
-            <span>
-            {requestData?.extensionsData[0].parameters?.paymentAddress}</span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
+            <span className="hidden lg:block">
+            {requestData?.payer?.value}
+            </span>
+            <span className="block lg:hidden">
+            {requestData?.payer?.value.slice(0,5) + '...' + requestData?.payee?.value.slice(35,41)}
+            </span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
         </div>
 
         <div className="flex justify-between">
@@ -366,17 +400,53 @@ export default function Home() {
         <div className="text-red-500 mb-4">
             {error && error.message}
         </div>
+
+
+{/* @ts-ignore */}
+    
+<dialog id="my_modal_1" className="modal">
+  <div className="modal-box">
+    <h3 className="font-bold text-lg">Hello!</h3>
+    <p className="py-4">Press ESC key or click the button below to close</p>
+    <div className="modal-action">
+      <form method="dialog">
+        {/* if there is a button in form, it will close the modal */}
+        <button className="btn">Close</button>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+{/* confirmation modal */}
+<dialog id="confirmation_modal" className="modal">
+  <div className="modal-box bg-white">
+    <h3 className="font-bold text-lg">Confirmation</h3>
+    <p>Please confirm by writing the last 6 digits of the receiver address.</p>
+    <input 
+      type="text" 
+      className="input input-bordered w-full mb-4" 
+      maxLength={6} 
+      value={confirmationDigits} 
+      onChange={(e) => setConfirmationDigits(e.target.value)}
+    />
+    <div className="modal-action">
+      <button className="btn" onClick={handleConfirmation}>Confirm</button>
+      {/* @ts-ignore */}
+      <button className="btn btn-secondary" onClick={() => document.getElementById('confirmation_modal').close()}>Cancel</button>
+    </div>
+  </div>
+</dialog>
+
+
         <button type="button" onClick={handlePay} className="btn btn-primary w-full mb-4">
             Pay now
         </button>
 
         <h4 className="text-lg font-semibold my-4">Request info</h4>
-        <button type="button" onClick={handleClear} className="btn btn-secondary w-full mb-4">
-            Clear
-        </button>
+   
         <p className="mb-2">App status: {status}</p>
         <p className="mb-4">Request state: {requestData?.state}</p>
-        <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre>
+        {/* <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre> */}
         </div>
           : null}
 {/* 
@@ -446,12 +516,48 @@ export default function Home() {
         </div>
 
         <h4 className="text-lg font-semibold my-4">Request info</h4>
-        <button type="button" onClick={handleClear} className="btn btn-secondary w-full mb-4">
-            Clear
-        </button>
         <p className="mb-2">App status: {status}</p>
         <p className="mb-4">Request state: {requestData?.state}</p>
-        <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre>
+        </div>
+          : null} */}
+{
+       requestData?.payee?.value === address ? 
+       <div>
+        <h4 className="text-lg font-semibold my-4">Manage a request</h4>
+       
+        <button
+            disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
+            onClick={() => switchNetwork?.(chains.find(chain => chain.network === requestData?.currencyInfo.network)?.id)}
+            className="btn w-full mb-4"
+        >
+            Switch to Payment Chain: {requestData?.currencyInfo.network}
+            {isSwitchNetworkLoading && " (switching)"}
+        </button>
+
+        <button type="button" onClick={handleApproveBet} className="btn w-full mb-4">
+            Approve
+        </button>
+        <div className="text-red-500 mb-4">
+            {!switchNetwork && "Programmatic switch network not supported by wallet."}
+        </div>
+        <div className="text-red-500 mb-4">
+            {error && error.message}
+        </div>
+
+        <div>
+        <button type="button" onClick={handleAcceptPayment} className="btn btn-primary" style={{ flex: 1, marginRight: '5px' }}>
+            ACCEPT
+        </button>
+        <button type="button" onClick={handleDoubleYourIncome} className="btn btn-primary" style={{ flex: 1}}>
+            DOUBLE
+        </button>
+        </div>
+
+        <h4 className="text-lg font-semibold my-4">Request info</h4>
+     
+        <p className="mb-2">App status: {status}</p>
+        <p className="mb-4">Request state: {requestData?.state}</p>
+
         </div>
           : null}
 

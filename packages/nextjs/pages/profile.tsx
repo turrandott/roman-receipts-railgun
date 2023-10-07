@@ -73,10 +73,9 @@ const calculateStatus = (
       </button>
     </div>
     {activeButton === "transactionHistory" &&
-      <div className="App p-8 bg-gray-100 min-h-screen">
-      
-      <div className="bg-white p-4 rounded-lg shadow-md">
-        <table className="table w-full">
+  <div className="App p-8 bg-gray-100 min-h-screen">
+  <div className="bg-white p-4 rounded-lg shadow-md overflow-x-auto">
+    <table className="table w-full min-w-max">
           <thead>
             <tr>
               <th>Timestamp</th>
@@ -129,28 +128,53 @@ const calculateStatus = (
         </table>
       </div>
   
-      <h1 className="text-2xl font-bold mt-8 mb-4">Raw Requests</h1>
+
      
     </div>
     }
 
 {activeButton === "pendingInvoices" &&
   <div className="App p-8 bg-gray-100 min-h-screen">
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {totalRequestHistory
-        ?.filter((request: any) => {
-          return calculateStatus(
-            request.state,
-            BigInt(request.expectedAmount),
-            BigInt(request.balance?.balance || 0)
-          ) !== "Paid";
-        })
-        .map((request: any) => (
-          <PendingInvoice request={request} key={request.timestamp} />
-        ))}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* You must pay column */}
+      <div>
+        <h2 className="text-xl font-bold mb-4">You must pay</h2>
+        <div className="grid grid-cols-1 gap-4">
+          {totalRequestHistory
+            ?.filter((request: any) => {
+              return calculateStatus(
+                request.state,
+                BigInt(request.expectedAmount),
+                BigInt(request.balance?.balance || 0)
+              ) !== "Paid" && request?.payer.value === address;
+            })
+            .map((request: any) => (
+              <PendingInvoice request={request} key={request.timestamp} />
+            ))}
+        </div>
+      </div>
+
+      {/* You must be paid column */}
+      <div>
+        <h2 className="text-xl font-bold mb-4">You must be paid</h2>
+        <div className="grid grid-cols-1 gap-4">
+          {totalRequestHistory
+            ?.filter((request: any) => {
+              return calculateStatus(
+                request.state,
+                BigInt(request.expectedAmount),
+                BigInt(request.balance?.balance || 0)
+              ) !== "Paid" && request?.payer.value !== address;
+            })
+            .map((request: any) => (
+              <PendingInvoice request={request} key={request.timestamp} />
+            ))}
+        </div>
+      </div>
     </div>
   </div>
 }
+
 
   
     </div>
