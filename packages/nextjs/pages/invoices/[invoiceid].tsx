@@ -283,7 +283,7 @@ export default function Home() {
         <div className="flex justify-between">
             <span className="font-medium">Status:</span>
             <span>
-            {calculateStatus(
+            {requestData && calculateStatus(
           requestData?.state as any,
           BigInt(requestData?.expectedAmount as any),
           BigInt(requestData?.balance?.balance || 0)
