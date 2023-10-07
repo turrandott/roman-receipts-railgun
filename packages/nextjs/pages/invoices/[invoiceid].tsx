@@ -162,12 +162,17 @@ export default function Home() {
         <p className="text-xs">Invoice id: {invoiceid}</p>
         <div className="flex justify-between mb-2">
             <span className="font-medium">From:</span>
-            <span>{requestData?.payee?.value}</span>
+        
+            <span>
+            {requestData?.payee?.value}
+            </span>
         </div>
 
         <div className="flex justify-between mb-2">
             <span className="font-medium">To:</span>
-            <span>{requestData?.payer?.value}</span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
+     
+            <span>
+            {requestData?.extensionsData[0].parameters?.paymentAddress}</span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
         </div>
 
         <div className="flex justify-between">
