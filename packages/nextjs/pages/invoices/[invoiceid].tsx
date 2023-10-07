@@ -8,13 +8,21 @@ import USDTabi from "../../generated/USDTabi.json";
 import azuroAbi from "../../generated/azuroDoubleAbi.json";
 import { useEthersV5Provider } from "../../hooks/ethers/use-ethers-v5-provider";
 import { useEthersV5Signer } from "../../hooks/ethers/use-ethers-v5-signer";
+import { AmazonSquareFilled } from "@ant-design/icons";
 import "@rainbow-me/rainbowkit/styles.css";
 import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
 import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "@requestnetwork/payment-processor";
 import { RequestNetwork, Types, Utils } from "@requestnetwork/request-client.js";
-import { Web3SignatureProvider } from "@requestnetwork/web3-signature";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
-import { useAccount, useContractRead, useContractWrite, useNetwork, useSwitchNetwork, useWalletClient } from "wagmi";
+import {
+  useAccount,
+  useContractEvent,
+  useContractRead,
+  useContractWrite,
+  useNetwork,
+  useSwitchNetwork,
+  useWalletClient,
+} from "wagmi";
 
 const calculateStatus = (state: string, expectedAmount: bigint, balance: bigint) => {
   if (balance >= expectedAmount) {
@@ -44,13 +52,14 @@ enum APP_STATUS {
   PAYMENT_ACCEPTED = "payment accepted",
   DEGENERACY_APPROVED = "degeneracy approved",
   BET_PLACED = "bet placed",
-  BET_PENDING = "bet pending",
   BET_COMPLETED = "bet completed",
   ERROR_OCCURRED = "error occurred",
 }
 
 export default function Home() {
   const [storageChain, setStorageChain] = useState("100");
+  const [approved, setApproved] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [confirmationDigits, setConfirmationDigits] = useState("");
   const router = useRouter();
   const { invoiceid } = router.query;
@@ -81,6 +90,21 @@ export default function Home() {
     functionName: "approve",
   });
 
+  const { write: withdrawAmountWon } = useContractWrite({
+    address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
+    abi: azuroAbi,
+    functionName: "games",
+  });
+
+  useContractEvent({
+    address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
+    abi: azuroAbi,
+    eventName: "GameResultFulfilled",
+    listener(log) {
+      console.log(log);
+    },
+  });
+
   useEffect(() => {
     console.log(invoiceid);
   });
@@ -97,22 +121,23 @@ export default function Home() {
     });
   }, [address, invoiceid]);
 
+  // FUNCTIONS
   async function payTheRequest() {
     const requestClient = new RequestNetwork({
       nodeConnectionConfig: {
-        baseURL: storageChains.get(storageChain)!.gateway,
+        baseURL: storageChains.get(storageChain)?.gateway,
       },
     });
 
     try {
-      const _request = await requestClient.fromRequestId(requestData!.requestId);
+      const _request = await requestClient.fromRequestId(requestData?.requestId);
       let _requestData = _request.getData();
       const paymentTx = await payRequest(_requestData, signer);
       await paymentTx.wait(2);
 
       // Poll the request balance once every second until payment is detected
       // TODO Add a timeout
-      while (_requestData.balance?.balance! < _requestData.expectedAmount) {
+      while (_requestData.balance?.balance < _requestData.expectedAmount) {
         _requestData = await _request.refresh();
         alert(`balance = ${_requestData.balance?.balance}`);
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -144,6 +169,11 @@ export default function Home() {
       setStatus(APP_STATUS.ERROR_OCCURRED);
       alert(err);
     }
+
+    setStatus(APP_STATUS.DEGENERACY_APPROVED);
+    setTimeout(() => {
+      setApproved(true);
+    }, 10000);
   }
 
   async function doubleYourIncome() {
@@ -166,6 +196,9 @@ export default function Home() {
       setStatus(APP_STATUS.ERROR_OCCURRED);
       alert(err);
     }
+
+    setFetching(true);
+    setStatus(APP_STATUS.BET_PLACED);
   }
 
   // // NOT USED DUE TO RAILGUN ISSUES
@@ -284,7 +317,7 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl mt-12">
+      <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 mt-12">
         <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
         <p className="text-xs hidden lg:block">
           Invoice id: {invoiceid?.slice(0, 12) + "..." + invoiceid?.slice(59, 65)}
@@ -427,18 +460,18 @@ export default function Home() {
               {isSwitchNetworkLoading && " (switching)"}
             </button>
 
-            <button type="button" onClick={handleApproveBet} className="btn w-full mb-4">
-              Approve Degeneracy
-            </button>
             <div className="text-red-500 mb-4">
               {!switchNetwork && "Programmatic switch network not supported by wallet."}
             </div>
+
             <div className="text-red-500 mb-4">{error && error.message}</div>
 
-
-
-            <button type="button" onClick={handleDoubleYourIncome} className="btn w-full mb-4">
-            DOUBLE OR NOTHING
+            <button
+              type="button"
+              onClick={approved ? handleDoubleYourIncome : handleApproveBet}
+              className={approved ? "btn btn-primary w-full mb-4" : "btn w-full mb-4"}
+            >
+              {approved ? "DOUBLE OR NOTHING" : "APPROVE DEGENERACY"}
             </button>
 
             <h4 className="text-lg font-semibold my-4">Request info</h4>
