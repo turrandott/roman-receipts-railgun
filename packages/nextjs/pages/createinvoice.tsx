@@ -261,7 +261,7 @@ export default function CreateInvoice() {
             Clear
           </button>
           <div className="flex">
-            <p className="">{status}</p>
+            <p className="font-bold">{status}</p>
           <p> {loading && <span className="loading loading-ring loading-xl "></span> }</p>
  
           </div>
