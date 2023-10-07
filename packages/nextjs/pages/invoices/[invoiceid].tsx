@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { currencies } from "../../config/currency";
 import { storageChains } from "../../config/storage-chain";
 import USDTabi from "../../generated/USDTabi.json";
 import azuroAbi from "../../generated/azuroDoubleAbi.json";
@@ -43,6 +42,7 @@ enum APP_STATUS {
   PAYING = "paying",
   REQUEST_PAID = "request paid",
   PAYMENT_ACCEPTED = "payment accepted",
+  DEGENERACY_APPROVED = "degeneracy approved",
   BET_PLACED = "bet placed",
   BET_PENDING = "bet pending",
   BET_COMPLETED = "bet completed",
@@ -51,20 +51,12 @@ enum APP_STATUS {
 
 export default function Home() {
   const [storageChain, setStorageChain] = useState("100");
-  const [expectedAmount, setExpectedAmount] = useState("");
-  const [currency, setCurrency] = useState("137_0xc2132D05D31c914a87C6611C10748AEb04B58e8F");
   const [confirmationDigits, setConfirmationDigits] = useState("");
-
   const router = useRouter();
   const { invoiceid } = router.query;
-
-  const [paymentRecipient, setPaymentRecipient] = useState("");
-  const [payerIdentity, setPayerIdentity] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [reason, setReason] = useState("");
   const [status, setStatus] = useState(APP_STATUS.AWAITING_INPUT);
-  const { data: walletClient, isError, isLoading } = useWalletClient();
-  const { address, isConnecting, isDisconnected } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const { address } = useAccount();
   const { chain } = useNetwork();
   const { chains, error, isLoading: isSwitchNetworkLoading, switchNetwork } = useSwitchNetwork();
   const [requestData, setRequestData] = useState<Types.IRequestDataWithEvents>();
@@ -91,7 +83,7 @@ export default function Home() {
 
   useEffect(() => {
     console.log(invoiceid);
-  }, []);
+  });
 
   useEffect(() => {
     const requestClient = new RequestNetwork({
@@ -137,19 +129,17 @@ export default function Home() {
   async function approveBet() {
     const requestClient = new RequestNetwork({
       nodeConnectionConfig: {
-        baseURL: storageChains.get(storageChain)!.gateway,
+        baseURL: storageChains.get(storageChain)?.gateway,
       },
     });
 
-    const _request = await requestClient.fromRequestId(requestData!.requestId);
-    let _requestData = _request.getData();
+    const _request = await requestClient.fromRequestId(requestData?.requestId);
+    const _requestData = _request.getData();
 
     try {
       const amount = _requestData.expectedAmount;
       //@ts-ignore
       approveUSDT({ args: ["0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4", amount.slice(0, -1)] });
-
-      alert(`Approve pls!`);
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
       alert(err);
@@ -159,12 +149,12 @@ export default function Home() {
   async function doubleYourIncome() {
     const requestClient = new RequestNetwork({
       nodeConnectionConfig: {
-        baseURL: storageChains.get(storageChain)!.gateway,
+        baseURL: storageChains.get(storageChain)?.gateway,
       },
     });
 
-    const _request = await requestClient.fromRequestId(requestData!.requestId);
-    let _requestData = _request.getData();
+    const _request = await requestClient.fromRequestId(requestData?.requestId);
+    const _requestData = _request.getData();
 
     try {
       const amount = _requestData.expectedAmount;
@@ -399,7 +389,7 @@ export default function Home() {
                   <button className="btn btn-primary" onClick={handleConfirmation}>
                     Confirm
                   </button>
-                  {/* @ts-ignore */}
+
                   <button
                     className="btn bg-white"
                     onClick={() => document.getElementById("confirmation_modal").close()}
