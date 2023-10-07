@@ -306,20 +306,20 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-    <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl mt-12">
+      <div className="bg-white p-5 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl mt-16">
         <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
-        <p className="text-xs">Invoice id: {invoiceid?.slice(0, 12) + '...' + invoiceid?.slice(59,65)}</p>
+        <p className="text-xs flex justify-between">
+          <span>Invoice id:</span>
+          <span>{invoiceid?.slice(0, 12) + '...' + invoiceid?.slice(59,65)}</span>
+        </p>
         <div className="flex justify-between mb-2">
-            <span className="font-medium">From:</span>
-        
-        
-            <span className="hidden lg:block">
+          <span className="font-medium">From:</span>
+          <span className="hidden lg:block">
             {requestData?.payee?.value}
-            </span>
-            <span className="block lg:hidden">
-            {requestData?.payee?.value.slice(0,5) + '...' + requestData?.payee?.value.slice(35,41)}
-            </span>
-         
+          </span>
+          <span className="block lg:hidden">
+          {requestData?.payee?.value.slice(0,5) + '...' + requestData?.payee?.value.slice(35,41)}
+          </span>
         </div>
 
         <div className="flex justify-between mb-2">
@@ -333,7 +333,7 @@ export default function Home() {
             </span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
         </div>
 
-        <div className="flex justify-between">
+        <div className="flex justify-between mt-8">
             <span className="font-medium">Amount:</span>
             <span>{requestData?.expectedAmount ? formatUnits(BigInt(requestData?.expectedAmount as any), 18) : null}</span>
         </div>
@@ -354,11 +354,9 @@ export default function Home() {
         </div>
 
 
-      
-      
         { requestData?.payer?.value === address ? 
 
-        <ul className="list-disc pl-5 mb-4">
+        <ul className="list-disc pl-5 my-16">
             <li className="mb-2">
                 <span>Get FAU on Goerli using the </span>
                 <Link href="https://erc20faucet.com/" target="_blank" className="text-blue-500 underline">
@@ -376,7 +374,7 @@ export default function Home() {
        {
        requestData?.payer?.value === address ? 
        <div>
-        <h4 className="text-lg font-semibold my-4">Pay a request</h4>
+        <h4 className="text-lg font-semibold my-4 text-center">Pay a request</h4>
        
         <button
             disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
@@ -426,50 +424,19 @@ export default function Home() {
             Pay now
         </button>
 
-        <h4 className="text-lg font-semibold my-4">Request info</h4>
-   
-        <p className="mb-2">App status: {status}</p>
-        <p className="mb-4">Request state: {requestData?.state}</p>
-        {/* <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre> */}
+        <div className="my-16">
+          <h4 className="text-lg font-semibold my-4 text-center">Request info</h4>
+    
+          <p className="mb-2">App status: {status}</p>
+          <p className="mb-4">Request state: {requestData?.state}</p>
         </div>
-          : null}
-{/* 
+      </div>
+      : null}
+
 {
        requestData?.payee?.value === address ? 
-       <div>
-        <h4 className="text-lg font-semibold my-4">Pay a request</h4>
-       
-        <button
-            disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
-            onClick={() => switchNetwork?.(chains.find(chain => chain.network === requestData?.currencyInfo.network)?.id)}
-            className="btn w-full mb-4"
-        >
-            Switch to Payment Chain: {requestData?.currencyInfo.network}
-            {isSwitchNetworkLoading && " (switching)"}
-        </button>
-
-        <button type="button" onClick={handleApprove} className="btn w-full mb-4">
-            Approve
-        </button>
-        <div className="text-red-500 mb-4">
-            {!switchNetwork && "Programmatic switch network not supported by wallet."}
-        </div>
-        <div className="text-red-500 mb-4">
-            {error && error.message}
-        </div>
-        <button type="button" onClick={handleAcceptPayment} className="btn btn-primary w-full mb-4">
-            Accept Payment
-        </button>
-
-        <h4 className="text-lg font-semibold my-4">Request info</h4>
-        <p className="mb-2">App status: {status}</p>
-        <p className="mb-4">Request state: {requestData?.state}</p>
-        </div>
-          : null} */}
-{
-       requestData?.payee?.value === address ? 
-       <div>
-        <h4 className="text-lg font-semibold my-4">Manage a request</h4>
+       <div className="my-12">
+        <h4 className="text-lg font-semibold my-4 text-center">Manage a request</h4>
        
         <button
             disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
@@ -490,26 +457,23 @@ export default function Home() {
             {error && error.message}
         </div>
 
-        <div>
-        <button type="button" onClick={handleAcceptPayment} className="btn btn-primary" style={{ flex: 1, marginRight: '5px' }}>
+        <div className="flex flex-row justify-between">
+          <button type="button" onClick={handleAcceptPayment} className="btn btn-primary" style={{width: "47%"}}>
             ACCEPT
-        </button>
-        <button type="button" onClick={handleDoubleYourIncome} className="btn btn-primary" style={{ flex: 1}}>
+          </button>
+          <button type="button" onClick={handleDoubleYourIncome} className="btn btn-primary" style={{width: "47%"}}>
             DOUBLE
-        </button>
+          </button>
         </div>
 
-        <h4 className="text-lg font-semibold my-4">Request info</h4>
+        <h4 className="text-lg font-semibold my-4 mt-16 text-center">Request info</h4>
         <p className="mb-2">App status: {status}</p>
         <p className="mb-4">Request state: {requestData?.state}</p>
         </div>
           : null} 
     
 
-        </div>
-      
+      </div>
     </div>
-
-
   );
 }
