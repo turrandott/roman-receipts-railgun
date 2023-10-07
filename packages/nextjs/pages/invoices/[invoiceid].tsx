@@ -286,10 +286,9 @@ export default function Home() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl mt-12">
         <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
-        <p className="text-xs hidden lg:block">
-          Invoice id: {invoiceid?.slice(0, 12) + "..." + invoiceid?.slice(59, 65)}
+        <p className="text-xs break-all">
+          id: {invoiceid}
         </p>
-        <p className="text-xs block lg:hidden">Invoice id: {invoiceid}</p>
         <div className="flex justify-between mb-2">
           <span className="font-medium">From:</span>
 
@@ -332,7 +331,7 @@ export default function Home() {
         </div>
 
         {requestData?.payer?.value === address ? (
-          <ul className="list-disc pl-5 mb-4">
+          <ul className="list-disc pl-5 mb-4 my-12">
             <li className="mb-2">
               <span>Get FAU on Goerli using the </span>
               <Link href="https://erc20faucet.com/" target="_blank" className="text-blue-500 underline">
@@ -349,7 +348,7 @@ export default function Home() {
         ) : null}
 
         {requestData?.payer?.value === address ? (
-          <div>
+          <div className="my-16">
             <h4 className="text-lg font-semibold my-4">Pay a request</h4>
 
             <button
@@ -413,8 +412,8 @@ export default function Home() {
         ) : null}
 
         {requestData?.payee?.value === address ? (
-          <div>
-            <h4 className="text-lg font-semibold my-4">Manage a request</h4>
+          <div className="my-16">
+            <h4 className="text-lg font-semibold my-4 text-center">Manage a request</h4>
 
             <button
               disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
@@ -441,9 +440,11 @@ export default function Home() {
             DOUBLE OR NOTHING
             </button>
 
-            <h4 className="text-lg font-semibold my-4">Request info</h4>
-            <p className="mb-2">App status: {status}</p>
-            <p className="mb-4">Request state: {requestData?.state}</p>
+            <div>
+              <h4 className="text-lg font-semibold my-4 text-center">Request info</h4>
+              <p className="mb-2">App status: {status}</p>
+              <p className="mb-4">Request state: {requestData?.state}</p>
+            </div>
           </div>
         ) : null}
       </div>
