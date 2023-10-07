@@ -1,28 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { abi as azuroAbi } from "../../generated/azuroDouble.json";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { currencies } from "../../config/currency";
 import { storageChains } from "../../config/storage-chain";
+import USDTabi from "../../generated/USDTabi.json";
+import azuroAbi from "../../generated/azuroDoubleAbi.json";
 import { useEthersV5Provider } from "../../hooks/ethers/use-ethers-v5-provider";
 import { useEthersV5Signer } from "../../hooks/ethers/use-ethers-v5-signer";
-import styles from "@/app/page.module.css";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
 import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "@requestnetwork/payment-processor";
 import { RequestNetwork, Types, Utils } from "@requestnetwork/request-client.js";
 import { Web3SignatureProvider } from "@requestnetwork/web3-signature";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
-import { useAccount, useNetwork, useSwitchNetwork, useWalletClient, useContractWrite, useContractRead  } from "wagmi";
+import { useAccount, useContractRead, useContractWrite, useNetwork, useSwitchNetwork, useWalletClient } from "wagmi";
 
-const calculateStatus = (
-  state: string,
-  expectedAmount: bigint,
-  balance: bigint
-) => {
+const calculateStatus = (state: string, expectedAmount: bigint, balance: bigint) => {
   if (balance >= expectedAmount) {
     return "Paid";
   }
@@ -37,7 +32,6 @@ const calculateStatus = (
   }
 };
 
-
 enum APP_STATUS {
   AWAITING_INPUT = "awaiting input",
   SUBMITTING = "submitting",
@@ -49,6 +43,9 @@ enum APP_STATUS {
   PAYING = "paying",
   REQUEST_PAID = "request paid",
   PAYMENT_ACCEPTED = "payment accepted",
+  BET_PLACED = "bet placed",
+  BET_PENDING = "bet pending",
+  BET_COMPLETED = "bet completed",
   ERROR_OCCURRED = "error occurred",
 }
 
@@ -73,24 +70,24 @@ export default function Home() {
   const [requestData, setRequestData] = useState<Types.IRequestDataWithEvents>();
   const provider = useEthersV5Provider();
   const signer = useEthersV5Signer();
+
   const { write: bet } = useContractWrite({
+    address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
     abi: azuroAbi,
-    address: '0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4',
     functionName: "bet",
   });
-  const { write: betPayout } = useContractWrite({
-    abi: azuroAbi,
-    address: '0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4',
-    functionName: "betPayout",
-  });
 
-  const { data: readGamesData } = useContractRead({
+  const { data: gameResults } = useContractRead({
+    address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
     abi: azuroAbi,
-    address: '0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4',
     functionName: "games",
   });
 
-  
+  const { write: approveUSDT } = useContractWrite({
+    address: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+    abi: USDTabi,
+    functionName: "approve",
+  });
 
   useEffect(() => {
     console.log(invoiceid);
@@ -138,7 +135,25 @@ export default function Home() {
   }
 
   async function approveBet() {
+    const requestClient = new RequestNetwork({
+      nodeConnectionConfig: {
+        baseURL: storageChains.get(storageChain)!.gateway,
+      },
+    });
 
+    const _request = await requestClient.fromRequestId(requestData!.requestId);
+    let _requestData = _request.getData();
+
+    try {
+      const amount = _requestData.expectedAmount;
+      //@ts-ignore
+      approveUSDT({ args: ["0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4", amount.slice(0, -1)] });
+
+      alert(`Approve pls!`);
+    } catch (err) {
+      setStatus(APP_STATUS.ERROR_OCCURRED);
+      alert(err);
+    }
   }
 
   async function doubleYourIncome() {
@@ -150,25 +165,12 @@ export default function Home() {
 
     const _request = await requestClient.fromRequestId(requestData!.requestId);
     let _requestData = _request.getData();
+
     try {
-      // while (_requestData.state != Types.RequestLogic.STATE.ACCEPTED) {
-      //   acceptPayment()
-      // }
+      const amount = _requestData.expectedAmount;
+      //@ts-ignore
+      bet({ args: [amount.slice(0, -12)] });
 
-      const amount = _requestData.balance?.balance!;
-      let doublingTx = bet({args: [amount]});
-
-      // todo: add waitin
-      // let results = useContractRead({
-      //   abi: azuroAbi,
-      //   address: '0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4',
-      //   functionName: "games",
-      //   args: [_requestData.payee?.value]});
-      // readGamesData()
-      // console.log(results);
-
-      // Poll the request balance once every second until payment is detected
-      // TODO Add a timeout
       alert(`bet placed!`);
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
@@ -177,7 +179,6 @@ export default function Home() {
   }
 
   async function acceptPayment() {
-    
     const signatureProvider = new Web3SignatureProvider(walletClient);
     const requestClient = new RequestNetwork({
       nodeConnectionConfig: {
@@ -190,17 +191,20 @@ export default function Home() {
       const _request = await requestClient.fromRequestId(requestData!.requestId);
       let _requestData = _request.getData();
 
-    const ETHEREUM_ADDRESS = "ethereumAddress"
-   const   ETHEREUM_SMART_CONTRACT = "ethereumSmartContract"
-
+      const ETHEREUM_ADDRESS = "ethereumAddress";
+      const ETHEREUM_SMART_CONTRACT = "ethereumSmartContract";
 
       const identity = {
         type: ETHEREUM_ADDRESS,
-        value: requestData?.payee?.value
-      }
-//@ts-ignore
-      const declareReceivedTx = await _request.declareReceivedPayment(_requestData.expectedAmount, "thank you", requestData?.payee)
-      console.log(declareReceivedTx)
+        value: requestData?.payee?.value,
+      };
+      //@ts-ignore
+      const declareReceivedTx = await _request.declareReceivedPayment(
+        _requestData.expectedAmount,
+        "thank you",
+        requestData?.payee,
+      );
+      console.log(declareReceivedTx);
       while (_requestData.state != Types.RequestLogic.STATE.ACCEPTED) {
         _requestData = await _request.refresh();
         alert(`state = ${_requestData.state}`);
@@ -211,17 +215,15 @@ export default function Home() {
       setStatus(APP_STATUS.PAYMENT_ACCEPTED);
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
-      console.log(err)
+      console.log(err);
       alert(err);
     }
   }
 
-
-
   function handlePay(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     //@ts-ignore
-    document.getElementById('confirmation_modal').showModal();
+    document.getElementById("confirmation_modal").showModal();
   }
 
   function handleAcceptPayment(e: React.MouseEvent<HTMLButtonElement>) {
@@ -231,7 +233,6 @@ export default function Home() {
     acceptPayment();
   }
 
-  
   function handleApproveBet(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
 
@@ -256,7 +257,7 @@ export default function Home() {
     try {
       const _request = await requestClient.fromRequestId(requestData!.requestId);
       const _requestData = _request.getData();
-   
+
       if (
         getPaymentNetworkExtension(_requestData)?.id === Types.Extension.PAYMENT_NETWORK_ID.ERC20_FEE_PROXY_CONTRACT
       ) {
@@ -282,22 +283,14 @@ export default function Home() {
     approve();
   }
 
-
-
-
-
-
-
-
-
-
   function handleConfirmation() {
     //@ts-ignore
-    if (confirmationDigits === requestData.payee?.value.slice(-6)) {  // Check if the last 6 digits match
+    if (confirmationDigits === requestData.payee?.value.slice(-6)) {
+      // Check if the last 6 digits match
       //@ts-ignore
-      document.getElementById('confirmation_modal').close();  // Close the modal
+      document.getElementById("confirmation_modal").close(); // Close the modal
       setStatus(APP_STATUS.PAYING);
-      payTheRequest();  // Continue with the payment process
+      payTheRequest(); // Continue with the payment process
     } else {
       // Handle the error, for example, by showing an alert or updating the state to show an error message
       alert("The digits entered do not match. Please try again.");
@@ -306,248 +299,177 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-    <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl mt-12">
+      <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl mt-12">
         <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
-        <p className="text-xs hidden lg:block">Invoice id: {invoiceid?.slice(0, 12) + '...' + invoiceid?.slice(59,65)}</p>
+        <p className="text-xs hidden lg:block">
+          Invoice id: {invoiceid?.slice(0, 12) + "..." + invoiceid?.slice(59, 65)}
+        </p>
         <p className="text-xs block lg:hidden">Invoice id: {invoiceid}</p>
         <div className="flex justify-between mb-2">
-            <span className="font-medium">From:</span>
-        
-        
-            <span className="hidden lg:block">
-            {requestData?.payee?.value}
-            </span>
-            <span className="block lg:hidden">
-            {requestData?.payee?.value.slice(0,5) + '...' + requestData?.payee?.value.slice(35,41)}
-            </span>
-         
+          <span className="font-medium">From:</span>
+
+          <span className="hidden lg:block">{requestData?.payee?.value}</span>
+          <span className="block lg:hidden">
+            {requestData?.payee?.value.slice(0, 5) + "..." + requestData?.payee?.value.slice(35, 41)}
+          </span>
         </div>
 
         <div className="flex justify-between mb-2">
-            <span className="font-medium">To:</span>
-     
-            <span className="hidden lg:block">
-            {requestData?.payer?.value}
-            </span>
-            <span className="block lg:hidden">
-            {requestData?.payer?.value.slice(0,5) + '...' + requestData?.payee?.value.slice(35,41)}
-            </span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
+          <span className="font-medium">To:</span>
+          <span className="hidden lg:block">{requestData?.payer?.value}</span>
+          <span className="block lg:hidden">
+            {requestData?.payer?.value.slice(0, 5) + "..." + requestData?.payee?.value.slice(35, 41)}
+          </span>{" "}
+          {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
         </div>
 
         <div className="flex justify-between">
-            <span className="font-medium">Amount:</span>
-            <span>{requestData?.expectedAmount ? formatUnits(BigInt(requestData?.expectedAmount as any), 18) : null}</span>
+          <span className="font-medium">Amount:</span>
+          <span>
+            {requestData?.expectedAmount ? formatUnits(BigInt(requestData?.expectedAmount as any), 18) : null}
+          </span>
         </div>
         <div className="flex justify-between">
-            <span className="font-medium">Reason:</span>
-            <span>{requestData?.contentData.reason}</span>
+          <span className="font-medium">Reason:</span>
+          <span>{requestData?.contentData.reason}</span>
         </div>
 
         <div className="flex justify-between">
-            <span className="font-medium">Status:</span>
-            <span>
-            {requestData && calculateStatus(
-          requestData?.state as any,
-          BigInt(requestData?.expectedAmount as any),
-          BigInt(requestData?.balance?.balance || 0)
-        ) }
-            </span>
+          <span className="font-medium">Status:</span>
+          <span>
+            {requestData &&
+              calculateStatus(
+                requestData?.state as any,
+                BigInt(requestData?.expectedAmount as any),
+                BigInt(requestData?.balance?.balance || 0),
+              )}
+          </span>
         </div>
 
-
-      
-      
-        { requestData?.payer?.value === address ? 
-
-        <ul className="list-disc pl-5 mb-4">
+        {requestData?.payer?.value === address ? (
+          <ul className="list-disc pl-5 mb-4">
             <li className="mb-2">
-                <span>Get FAU on Goerli using the </span>
-                <Link href="https://erc20faucet.com/" target="_blank" className="text-blue-500 underline">
-                    ERC20 Faucet by peppersec
-                </Link>
+              <span>Get FAU on Goerli using the </span>
+              <Link href="https://erc20faucet.com/" target="_blank" className="text-blue-500 underline">
+                ERC20 Faucet by peppersec
+              </Link>
             </li>
             <li>
-                <span>Get USDC on Goerli using the </span>
-                <Link href="https://usdcfaucet.com/" target="_blank" className="text-blue-500 underline">
-                    USDC Faucet by blockpatron
-                </Link>
+              <span>Get USDC on Goerli using the </span>
+              <Link href="https://usdcfaucet.com/" target="_blank" className="text-blue-500 underline">
+                USDC Faucet by blockpatron
+              </Link>
             </li>
-        </ul>
-: null  }
-       {
-       requestData?.payer?.value === address ? 
-       <div>
-        <h4 className="text-lg font-semibold my-4">Pay a request</h4>
-       
-        <button
-            disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
-            onClick={() => switchNetwork?.(chains.find(chain => chain.network === requestData?.currencyInfo.network)?.id)}
-            className="btn w-full mb-4"
-        >
-            Switch to Payment Chain: {requestData?.currencyInfo.network}
-            {isSwitchNetworkLoading && " (switching)"}
-        </button>
+          </ul>
+        ) : null}
 
-        <button type="button" onClick={handleApprove} className="btn w-full mb-4">
-            Approve
-        </button>
-        <div className="text-red-500 mb-4">
-            {!switchNetwork && "Programmatic switch network not supported by wallet."}
-        </div>
-        <div className="text-red-500 mb-4">
-            {error && error.message}
-        </div>
+        {requestData?.payer?.value === address ? (
+          <div>
+            <h4 className="text-lg font-semibold my-4">Pay a request</h4>
 
+            <button
+              disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
+              onClick={() =>
+                switchNetwork?.(chains.find(chain => chain.network === requestData?.currencyInfo.network)?.id)
+              }
+              className="btn w-full mb-4"
+            >
+              Switch to Payment Chain: {requestData?.currencyInfo.network}
+              {isSwitchNetworkLoading && " (switching)"}
+            </button>
 
-{/* @ts-ignore */}
+            <button type="button" onClick={handleApprove} className="btn w-full mb-4">
+              Approve
+            </button>
+            <div className="text-red-500 mb-4">
+              {!switchNetwork && "Programmatic switch network not supported by wallet."}
+            </div>
+            <div className="text-red-500 mb-4">{error && error.message}</div>
 
+            {/* @ts-ignore */}
 
-{/* confirmation modal */}
-<dialog id="confirmation_modal" className="modal">
-  <div className="modal-box bg-white">
-    <h3 className="font-bold text-lg">Confirmation</h3>
-    <p>Please confirm by writing the last 6 digits of the receiver address.</p>
-    <input 
-      type="text" 
-      className="input input-bordered w-full mb-4" 
-      maxLength={6} 
-      value={confirmationDigits} 
-      onChange={(e) => setConfirmationDigits(e.target.value)}
-    />
-    <div className="modal-action">
-      <button className="btn btn-primary" onClick={handleConfirmation}>Confirm</button>
-      {/* @ts-ignore */}
-      <button className="btn bg-white" onClick={() => document.getElementById('confirmation_modal').close()}>Cancel</button>
+            {/* confirmation modal */}
+            <dialog id="confirmation_modal" className="modal">
+              <div className="modal-box bg-white">
+                <h3 className="font-bold text-lg">Confirmation</h3>
+                <p>Please confirm by writing the last 6 digits of the receiver address.</p>
+                <input
+                  type="text"
+                  className="input input-bordered w-full mb-4"
+                  maxLength={6}
+                  value={confirmationDigits}
+                  onChange={e => setConfirmationDigits(e.target.value)}
+                />
+                <div className="modal-action">
+                  <button className="btn btn-primary" onClick={handleConfirmation}>
+                    Confirm
+                  </button>
+                  {/* @ts-ignore */}
+                  <button
+                    className="btn bg-white"
+                    onClick={() => document.getElementById("confirmation_modal").close()}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </dialog>
+
+            <button type="button" onClick={handlePay} className="btn btn-primary w-full mb-4">
+              Pay now
+            </button>
+
+            <h4 className="text-lg font-semibold my-4">Request info</h4>
+
+            <p className="mb-2">App status: {status}</p>
+            <p className="mb-4">Request state: {requestData?.state}</p>
+            {/* <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre> */}
+          </div>
+        ) : null}
+
+        {requestData?.payee?.value === address ? (
+          <div>
+            <h4 className="text-lg font-semibold my-4">Manage a request</h4>
+
+            <button
+              disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
+              onClick={() =>
+                switchNetwork?.(chains.find(chain => chain.network === requestData?.currencyInfo.network)?.id)
+              }
+              className="btn w-full mb-4"
+            >
+              Switch to Payment Chain: {requestData?.currencyInfo.network}
+              {isSwitchNetworkLoading && " (switching)"}
+            </button>
+
+            <button type="button" onClick={handleApproveBet} className="btn w-full mb-4">
+              Approve Degeneracy
+            </button>
+            <div className="text-red-500 mb-4">
+              {!switchNetwork && "Programmatic switch network not supported by wallet."}
+            </div>
+            <div className="text-red-500 mb-4">{error && error.message}</div>
+
+            <div>
+              <button
+                type="button"
+                onClick={handleAcceptPayment}
+                className="btn btn-primary"
+                style={{ flex: 1, marginRight: "5px" }}
+              >
+                ACCEPT
+              </button>
+              <button type="button" onClick={handleDoubleYourIncome} className="btn btn-primary" style={{ flex: 1 }}>
+                DOUBLE
+              </button>
+            </div>
+
+            <h4 className="text-lg font-semibold my-4">Request info</h4>
+            <p className="mb-2">App status: {status}</p>
+            <p className="mb-4">Request state: {requestData?.state}</p>
+          </div>
+        ) : null}
+      </div>
     </div>
-  </div>
-</dialog>
-
-
-        <button type="button" onClick={handlePay} className="btn btn-primary w-full mb-4">
-            Pay now
-        </button>
-
-        <h4 className="text-lg font-semibold my-4">Request info</h4>
-   
-        <p className="mb-2">App status: {status}</p>
-        <p className="mb-4">Request state: {requestData?.state}</p>
-        {/* <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre> */}
-        </div>
-          : null}
-{/* 
-{
-       requestData?.payee?.value === address ? 
-       <div>
-        <h4 className="text-lg font-semibold my-4">Pay a request</h4>
-       
-        <button
-            disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
-            onClick={() => switchNetwork?.(chains.find(chain => chain.network === requestData?.currencyInfo.network)?.id)}
-            className="btn w-full mb-4"
-        >
-            Switch to Payment Chain: {requestData?.currencyInfo.network}
-            {isSwitchNetworkLoading && " (switching)"}
-        </button>
-
-        <button type="button" onClick={handleApprove} className="btn w-full mb-4">
-            Approve
-        </button>
-        <div className="text-red-500 mb-4">
-            {!switchNetwork && "Programmatic switch network not supported by wallet."}
-        </div>
-        <div className="text-red-500 mb-4">
-            {error && error.message}
-        </div>
-        <button type="button" onClick={handleAcceptPayment} className="btn btn-primary w-full mb-4">
-            Accept Payment
-        </button>
-
-        <h4 className="text-lg font-semibold my-4">Request info</h4>
-        <p className="mb-2">App status: {status}</p>
-        <p className="mb-4">Request state: {requestData?.state}</p>
-        </div>
-          : null} */}
-{
-       requestData?.payee?.value === address ? 
-       <div>
-        <h4 className="text-lg font-semibold my-4">Manage a request</h4>
-       
-        <button
-            disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
-            onClick={() => switchNetwork?.(chains.find(chain => chain.network === requestData?.currencyInfo.network)?.id)}
-            className="btn w-full mb-4"
-        >
-            Switch to Payment Chain: {requestData?.currencyInfo.network}
-            {isSwitchNetworkLoading && " (switching)"}
-        </button>
-
-        <button type="button" onClick={handleApproveBet} className="btn w-full mb-4">
-            Approve
-        </button>
-        <div className="text-red-500 mb-4">
-            {!switchNetwork && "Programmatic switch network not supported by wallet."}
-        </div>
-        <div className="text-red-500 mb-4">
-            {error && error.message}
-        </div>
-
-        <div>
-        <button type="button" onClick={handleAcceptPayment} className="btn btn-primary" style={{ flex: 1, marginRight: '5px' }}>
-            ACCEPT
-        </button>
-        <button type="button" onClick={handleDoubleYourIncome} className="btn btn-primary" style={{ flex: 1}}>
-            DOUBLE
-        </button>
-        </div>
-
-        <h4 className="text-lg font-semibold my-4">Request info</h4>
-        <p className="mb-2">App status: {status}</p>
-        <p className="mb-4">Request state: {requestData?.state}</p>
-        </div>
-          : null} */}
-{
-       requestData?.payee?.value === address ? 
-       <div>
-        <h4 className="text-lg font-semibold my-4">Manage a request</h4>
-       
-        <button
-            disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
-            onClick={() => switchNetwork?.(chains.find(chain => chain.network === requestData?.currencyInfo.network)?.id)}
-            className="btn w-full mb-4"
-        >
-            Switch to Payment Chain: {requestData?.currencyInfo.network}
-            {isSwitchNetworkLoading && " (switching)"}
-        </button>
-
-        <button type="button" onClick={handleApproveBet} className="btn w-full mb-4">
-            Approve
-        </button>
-        <div className="text-red-500 mb-4">
-            {!switchNetwork && "Programmatic switch network not supported by wallet."}
-        </div>
-        <div className="text-red-500 mb-4">
-            {error && error.message}
-        </div>
-
-        <div>
-        <button type="button" onClick={handleAcceptPayment} className="btn btn-primary" style={{ flex: 1, marginRight: '5px' }}>
-            ACCEPT
-        </button>
-        <button type="button" onClick={handleDoubleYourIncome} className="btn btn-primary" style={{ flex: 1}}>
-            DOUBLE
-        </button>
-        </div>
-
-        <h4 className="text-lg font-semibold my-4">Request info</h4>
-     
-        <p className="mb-2">App status: {status}</p>
-        <p className="mb-4">Request state: {requestData?.state}</p>
-
-        </div>
-          : null}
-
-    </div>
-</div>
-
   );
 }
