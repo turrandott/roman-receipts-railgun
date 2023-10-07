@@ -175,8 +175,17 @@ export default function Home() {
       const _request = await requestClient.fromRequestId(requestData!.requestId);
       let _requestData = _request.getData();
 
-      const declareReceivedTx = await _request.declareReceivedPayment(_requestData.balance?.balance!, "thank you", requestData!.payee!);
+    const ETHEREUM_ADDRESS = "ethereumAddress"
+   const   ETHEREUM_SMART_CONTRACT = "ethereumSmartContract"
 
+
+      const identity = {
+        type: ETHEREUM_ADDRESS,
+        value: requestData?.payee?.value
+      }
+//@ts-ignore
+      const declareReceivedTx = await _request.declareReceivedPayment(_requestData.balance?.balance!, "thank you", requestData?.payee)
+      console.log(declareReceivedTx)
       while (_requestData.state != Types.RequestLogic.STATE.ACCEPTED) {
         _requestData = await _request.refresh();
         alert(`state = ${_requestData.state}`);
@@ -187,6 +196,7 @@ export default function Home() {
       setStatus(APP_STATUS.PAYMENT_ACCEPTED);
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
+      console.log
       alert(err);
     }
   }
@@ -274,8 +284,7 @@ export default function Home() {
         <div className="flex justify-between mb-2">
             <span className="font-medium">To:</span>
      
-            <span>
-            {requestData?.extensionsData[0].parameters?.paymentAddress}</span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
+            <span> {requestData?.payer?.value}</span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
         </div>
 
         <div className="flex justify-between">
