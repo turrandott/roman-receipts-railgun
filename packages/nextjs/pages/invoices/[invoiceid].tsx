@@ -198,6 +198,13 @@ export default function Home() {
     payTheRequest();
   }
 
+  function handleAcceptPayment(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+
+    setStatus(APP_STATUS.PAYING);
+    acceptPayment();
+  }
+
   async function approve() {
     const requestClient = new RequestNetwork({
       nodeConnectionConfig: {
@@ -336,6 +343,43 @@ export default function Home() {
         </div>
         <button type="button" onClick={handlePay} className="btn btn-primary w-full mb-4">
             Pay now
+        </button>
+
+        <h4 className="text-lg font-semibold my-4">Request info</h4>
+        <button type="button" onClick={handleClear} className="btn btn-secondary w-full mb-4">
+            Clear
+        </button>
+        <p className="mb-2">App status: {status}</p>
+        <p className="mb-4">Request state: {requestData?.state}</p>
+        <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre>
+        </div>
+          : null}
+
+{
+       requestData?.payee?.value === address ? 
+       <div>
+        <h4 className="text-lg font-semibold my-4">Pay a request</h4>
+       
+        <button
+            disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
+            onClick={() => switchNetwork?.(chains.find(chain => chain.network === requestData?.currencyInfo.network)?.id)}
+            className="btn w-full mb-4"
+        >
+            Switch to Payment Chain: {requestData?.currencyInfo.network}
+            {isSwitchNetworkLoading && " (switching)"}
+        </button>
+
+        <button type="button" onClick={handleApprove} className="btn w-full mb-4">
+            Approve
+        </button>
+        <div className="text-red-500 mb-4">
+            {!switchNetwork && "Programmatic switch network not supported by wallet."}
+        </div>
+        <div className="text-red-500 mb-4">
+            {error && error.message}
+        </div>
+        <button type="button" onClick={handleAcceptPayment} className="btn btn-primary w-full mb-4">
+            Accept Payment
         </button>
 
         <h4 className="text-lg font-semibold my-4">Request info</h4>
