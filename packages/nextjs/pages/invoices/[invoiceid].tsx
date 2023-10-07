@@ -211,7 +211,7 @@ export default function Home() {
       setStatus(APP_STATUS.PAYMENT_ACCEPTED);
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
-      console.log
+      console.log(err)
       alert(err);
     }
   }
@@ -256,13 +256,7 @@ export default function Home() {
     try {
       const _request = await requestClient.fromRequestId(requestData!.requestId);
       const _requestData = _request.getData();
-      alert(`Checking if payer has sufficient funds...`);
-      const _hasSufficientFunds = await hasSufficientFunds(_requestData, address as string, { provider: provider });
-      alert(`_hasSufficientFunds = ${_hasSufficientFunds}`);
-      if (!_hasSufficientFunds) {
-        setStatus(APP_STATUS.REQUEST_CONFIRMED);
-        return;
-      }
+   
       if (
         getPaymentNetworkExtension(_requestData)?.id === Types.Extension.PAYMENT_NETWORK_ID.ERC20_FEE_PROXY_CONTRACT
       ) {
@@ -299,7 +293,7 @@ export default function Home() {
 
   function handleConfirmation() {
     //@ts-ignore
-    if (confirmationDigits === address.slice(-6)) {  // Check if the last 6 digits match
+    if (confirmationDigits === requestData.payee?.value.slice(-6)) {  // Check if the last 6 digits match
       //@ts-ignore
       document.getElementById('confirmation_modal').close();  // Close the modal
       setStatus(APP_STATUS.PAYING);
@@ -406,19 +400,7 @@ export default function Home() {
 
 
 {/* @ts-ignore */}
-    
-<dialog id="my_modal_1" className="modal">
-  <div className="modal-box">
-    <h3 className="font-bold text-lg">Hello!</h3>
-    <p className="py-4">Press ESC key or click the button below to close</p>
-    <div className="modal-action">
-      <form method="dialog">
-        {/* if there is a button in form, it will close the modal */}
-        <button className="btn">Close</button>
-      </form>
-    </div>
-  </div>
-</dialog>
+
 
 {/* confirmation modal */}
 <dialog id="confirmation_modal" className="modal">
@@ -433,9 +415,9 @@ export default function Home() {
       onChange={(e) => setConfirmationDigits(e.target.value)}
     />
     <div className="modal-action">
-      <button className="btn" onClick={handleConfirmation}>Confirm</button>
+      <button className="btn btn-primary" onClick={handleConfirmation}>Confirm</button>
       {/* @ts-ignore */}
-      <button className="btn btn-secondary" onClick={() => document.getElementById('confirmation_modal').close()}>Cancel</button>
+      <button className="btn bg-white" onClick={() => document.getElementById('confirmation_modal').close()}>Cancel</button>
     </div>
   </div>
 </dialog>
