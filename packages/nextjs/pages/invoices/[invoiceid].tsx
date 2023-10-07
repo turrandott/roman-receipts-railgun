@@ -178,59 +178,54 @@ export default function Home() {
     }
   }
 
-  async function acceptPayment() {
-    const signatureProvider = new Web3SignatureProvider(walletClient);
-    const requestClient = new RequestNetwork({
-      nodeConnectionConfig: {
-        baseURL: storageChains.get(storageChain)!.gateway,
-      },
-      signatureProvider: signatureProvider,
-    });
+  // // NOT USED DUE TO RAILGUN ISSUES
+  // async function acceptPayment() {
+  //   const signatureProvider = new Web3SignatureProvider(walletClient);
+  //   const requestClient = new RequestNetwork({
+  //     nodeConnectionConfig: {
+  //       baseURL: storageChains.get(storageChain)!.gateway,
+  //     },
+  //     signatureProvider: signatureProvider,
+  //   });
 
-    try {
-      const _request = await requestClient.fromRequestId(requestData!.requestId);
-      let _requestData = _request.getData();
+  //   try {
+  //     const _request = await requestClient.fromRequestId(requestData!.requestId);
+  //     let _requestData = _request.getData();
 
-      const ETHEREUM_ADDRESS = "ethereumAddress";
-      const ETHEREUM_SMART_CONTRACT = "ethereumSmartContract";
+  //     const ETHEREUM_ADDRESS = "ethereumAddress";
+  //     const ETHEREUM_SMART_CONTRACT = "ethereumSmartContract";
 
-      const identity = {
-        type: ETHEREUM_ADDRESS,
-        value: requestData?.payee?.value,
-      };
-      //@ts-ignore
-      const declareReceivedTx = await _request.declareReceivedPayment(
-        _requestData.expectedAmount,
-        "thank you",
-        requestData?.payee,
-      );
-      console.log(declareReceivedTx);
-      while (_requestData.state != Types.RequestLogic.STATE.ACCEPTED) {
-        _requestData = await _request.refresh();
-        alert(`state = ${_requestData.state}`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      alert(`payment accepted!`);
-      setRequestData(_requestData);
-      setStatus(APP_STATUS.PAYMENT_ACCEPTED);
-    } catch (err) {
-      setStatus(APP_STATUS.ERROR_OCCURRED);
-      console.log(err);
-      alert(err);
-    }
-  }
+  //     const identity = {
+  //       type: ETHEREUM_ADDRESS,
+  //       value: requestData?.payee?.value,
+  //     };
+  //     //@ts-ignore
+  //     const declareReceivedTx = await _request.declareReceivedPayment(
+  //       _requestData.expectedAmount,
+  //       "thank you",
+  //       requestData?.payee,
+  //     );
+  //     console.log(declareReceivedTx);
+  //     while (_requestData.state != Types.RequestLogic.STATE.ACCEPTED) {
+  //       _requestData = await _request.refresh();
+  //       alert(`state = ${_requestData.state}`);
+  //       await new Promise(resolve => setTimeout(resolve, 1000));
+  //     }
+  //     alert(`payment accepted!`);
+  //     setRequestData(_requestData);
+  //     setStatus(APP_STATUS.PAYMENT_ACCEPTED);
+  //   } catch (err) {
+  //     setStatus(APP_STATUS.ERROR_OCCURRED);
+  //     console.log(err);
+  //     alert(err);
+  //   }
+  // }
 
   function handlePay(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    //@ts-ignore
-    document.getElementById("confirmation_modal").showModal();
-  }
-
-  function handleAcceptPayment(e: React.MouseEvent<HTMLButtonElement>) {
-    e.preventDefault();
 
     setStatus(APP_STATUS.PAYING);
-    acceptPayment();
+    payTheRequest();
   }
 
   function handleApproveBet(e: React.MouseEvent<HTMLButtonElement>) {
@@ -308,17 +303,17 @@ export default function Home() {
         <div className="flex justify-between mb-2">
           <span className="font-medium">From:</span>
 
-          <span className="hidden lg:block">{requestData?.payee?.value}</span>
+          <span className="hidden lg:block">{requestData?.payer?.value}</span>
           <span className="block lg:hidden">
-            {requestData?.payee?.value.slice(0, 5) + "..." + requestData?.payee?.value.slice(35, 41)}
+            {requestData?.payer?.value.slice(0, 5) + "..." + requestData?.payer?.value.slice(35, 41)}
           </span>
         </div>
 
         <div className="flex justify-between mb-2">
           <span className="font-medium">To:</span>
-          <span className="hidden lg:block">{requestData?.payer?.value}</span>
+          <span className="hidden lg:block">{requestData?.payee?.value}</span>
           <span className="block lg:hidden">
-            {requestData?.payer?.value.slice(0, 5) + "..." + requestData?.payee?.value.slice(35, 41)}
+            {requestData?.payee?.value.slice(0, 5) + "..." + requestData?.payee?.value.slice(35, 41)}
           </span>{" "}
           {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
         </div>
@@ -450,19 +445,11 @@ export default function Home() {
             </div>
             <div className="text-red-500 mb-4">{error && error.message}</div>
 
-            <div>
-              <button
-                type="button"
-                onClick={handleAcceptPayment}
-                className="btn btn-primary"
-                style={{ flex: 1, marginRight: "5px" }}
-              >
-                ACCEPT
-              </button>
-              <button type="button" onClick={handleDoubleYourIncome} className="btn btn-primary" style={{ flex: 1 }}>
-                DOUBLE
-              </button>
-            </div>
+
+
+            <button type="button" onClick={handleDoubleYourIncome} className="btn w-full mb-4">
+            DOUBLE OR NOTHING
+            </button>
 
             <h4 className="text-lg font-semibold my-4">Request info</h4>
             <p className="mb-2">App status: {status}</p>
