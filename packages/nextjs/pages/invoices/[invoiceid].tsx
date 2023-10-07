@@ -56,6 +56,8 @@ export default function Home() {
   const [storageChain, setStorageChain] = useState("5");
   const [expectedAmount, setExpectedAmount] = useState("");
   const [currency, setCurrency] = useState("5_0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc");
+  const [confirmationDigits, setConfirmationDigits] = useState("");
+
   const router = useRouter();
   const { invoiceid } = router.query;
 
@@ -201,11 +203,12 @@ export default function Home() {
     }
   }
 
+
+
   function handlePay(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-
-    setStatus(APP_STATUS.PAYING);
-    payTheRequest();
+    //@ts-ignore
+    document.getElementById('confirmation_modal').showModal();
   }
 
   function handleAcceptPayment(e: React.MouseEvent<HTMLButtonElement>) {
@@ -268,9 +271,23 @@ export default function Home() {
     setStatus(APP_STATUS.AWAITING_INPUT);
   }
 
+
+  function handleConfirmation() {
+    //@ts-ignore
+    if (confirmationDigits === address.slice(-6)) {  // Check if the last 6 digits match
+      //@ts-ignore
+      document.getElementById('confirmation_modal').close();  // Close the modal
+      setStatus(APP_STATUS.PAYING);
+      payTheRequest();  // Continue with the payment process
+    } else {
+      // Handle the error, for example, by showing an alert or updating the state to show an error message
+      alert("The digits entered do not match. Please try again.");
+    }
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-    <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl">
+    <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl mt-12">
         <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
         <p className="text-xs">Invoice id: {invoiceid}</p>
         <div className="flex justify-between mb-2">
@@ -350,6 +367,44 @@ export default function Home() {
         <div className="text-red-500 mb-4">
             {error && error.message}
         </div>
+
+
+{/* @ts-ignore */}
+    
+<dialog id="my_modal_1" className="modal">
+  <div className="modal-box">
+    <h3 className="font-bold text-lg">Hello!</h3>
+    <p className="py-4">Press ESC key or click the button below to close</p>
+    <div className="modal-action">
+      <form method="dialog">
+        {/* if there is a button in form, it will close the modal */}
+        <button className="btn">Close</button>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+{/* confirmation modal */}
+<dialog id="confirmation_modal" className="modal">
+  <div className="modal-box bg-white">
+    <h3 className="font-bold text-lg">Confirmation</h3>
+    <p>Please confirm by writing the last 6 digits of the receiver address.</p>
+    <input 
+      type="text" 
+      className="input input-bordered w-full mb-4" 
+      maxLength={6} 
+      value={confirmationDigits} 
+      onChange={(e) => setConfirmationDigits(e.target.value)}
+    />
+    <div className="modal-action">
+      <button className="btn" onClick={handleConfirmation}>Confirm</button>
+      {/* @ts-ignore */}
+      <button className="btn btn-secondary" onClick={() => document.getElementById('confirmation_modal').close()}>Cancel</button>
+    </div>
+  </div>
+</dialog>
+
+
         <button type="button" onClick={handlePay} className="btn btn-primary w-full mb-4">
             Pay now
         </button>
@@ -360,7 +415,7 @@ export default function Home() {
         </button>
         <p className="mb-2">App status: {status}</p>
         <p className="mb-4">Request state: {requestData?.state}</p>
-        <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre>
+        {/* <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre> */}
         </div>
           : null}
 
@@ -397,7 +452,7 @@ export default function Home() {
         </button>
         <p className="mb-2">App status: {status}</p>
         <p className="mb-4">Request state: {requestData?.state}</p>
-        <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre>
+
         </div>
           : null}
     </div>
