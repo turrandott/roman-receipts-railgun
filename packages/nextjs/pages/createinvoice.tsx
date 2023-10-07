@@ -132,10 +132,7 @@ export default function CreateInvoice() {
     createRequest();
   }
 
-  function handleClear(_: React.MouseEvent<HTMLButtonElement>) {
-    setRequestData(undefined);
-    setStatus(APP_STATUS.AWAITING_INPUT);
-  }
+ 
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 pt-12">
@@ -240,9 +237,7 @@ export default function CreateInvoice() {
 
         <div className="mt-8">
           <h3 className="text-center text-xl font-bold mb-4">Created request</h3>
-          <button type="button" onClick={handleClear} className="btn btn-secondary w-full mb-4">
-            Clear
-          </button>
+  
           <div className="flex">
             <p className="font-bold">{status}</p>
             <p> {loading && <span className="loading loading-ring loading-xl "></span>}</p>

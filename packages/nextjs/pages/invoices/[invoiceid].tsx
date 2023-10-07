@@ -266,10 +266,7 @@ export default function Home() {
 
 
 
-  function handleClear(_: React.MouseEvent<HTMLButtonElement>) {
-    setRequestData(undefined);
-    setStatus(APP_STATUS.AWAITING_INPUT);
-  }
+
 
 
   function handleConfirmation() {
@@ -289,19 +286,30 @@ export default function Home() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
     <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 rounded-2xl mt-12">
         <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
-        <p className="text-xs">Invoice id: {invoiceid}</p>
+        <p className="text-xs hidden lg:block">Invoice id: {invoiceid?.slice(0, 12) + '...' + invoiceid?.slice(59,65)}</p>
+        <p className="text-xs block lg:hidden">Invoice id: {invoiceid}</p>
         <div className="flex justify-between mb-2">
             <span className="font-medium">From:</span>
         
-            <span>
+        
+            <span className="hidden lg:block">
             {requestData?.payee?.value}
             </span>
+            <span className="block lg:hidden">
+            {requestData?.payee?.value.slice(0,5) + '...' + requestData?.payee?.value.slice(35,41)}
+            </span>
+         
         </div>
 
         <div className="flex justify-between mb-2">
             <span className="font-medium">To:</span>
      
-            <span> {requestData?.payer?.value}</span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
+            <span className="hidden lg:block">
+            {requestData?.payer?.value}
+            </span>
+            <span className="block lg:hidden">
+            {requestData?.payer?.value.slice(0,5) + '...' + requestData?.payee?.value.slice(35,41)}
+            </span> {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
         </div>
 
         <div className="flex justify-between">
@@ -410,9 +418,7 @@ export default function Home() {
         </button>
 
         <h4 className="text-lg font-semibold my-4">Request info</h4>
-        <button type="button" onClick={handleClear} className="btn btn-secondary w-full mb-4">
-            Clear
-        </button>
+   
         <p className="mb-2">App status: {status}</p>
         <p className="mb-4">Request state: {requestData?.state}</p>
         {/* <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre> */}
@@ -447,9 +453,7 @@ export default function Home() {
         </button>
 
         <h4 className="text-lg font-semibold my-4">Request info</h4>
-        <button type="button" onClick={handleClear} className="btn btn-secondary w-full mb-4">
-            Clear
-        </button>
+     
         <p className="mb-2">App status: {status}</p>
         <p className="mb-4">Request state: {requestData?.state}</p>
 
