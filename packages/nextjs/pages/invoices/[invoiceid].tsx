@@ -16,7 +16,7 @@ import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "
 import { RequestNetwork, Types, Utils } from "@requestnetwork/request-client.js";
 import { Web3SignatureProvider } from "@requestnetwork/web3-signature";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
-import { useAccount, useNetwork, useSwitchNetwork, useWalletClient, useContractWrite  } from "wagmi";
+import { useAccount, useNetwork, useSwitchNetwork, useWalletClient, useContractWrite, useContractRead  } from "wagmi";
 
 const calculateStatus = (
   state: string,
@@ -53,9 +53,9 @@ enum APP_STATUS {
 }
 
 export default function Home() {
-  const [storageChain, setStorageChain] = useState("5");
+  const [storageChain, setStorageChain] = useState("100");
   const [expectedAmount, setExpectedAmount] = useState("");
-  const [currency, setCurrency] = useState("5_0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc");
+  const [currency, setCurrency] = useState("137_0xc2132D05D31c914a87C6611C10748AEb04B58e8F");
   const router = useRouter();
   const { invoiceid } = router.query;
 
@@ -73,13 +73,19 @@ export default function Home() {
   const signer = useEthersV5Signer();
   const { write: bet } = useContractWrite({
     abi: azuroAbi,
-    address: '0xA68fdE7b2bA954c2CECBFb045BcA7be16C782535',
+    address: '0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4',
     functionName: "bet",
   });
   const { write: betPayout } = useContractWrite({
     abi: azuroAbi,
-    address: '0xA68fdE7b2bA954c2CECBFb045BcA7be16C782535',
+    address: '0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4',
     functionName: "betPayout",
+  });
+
+  const { data: readGamesData } = useContractRead({
+    abi: azuroAbi,
+    address: '0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4',
+    functionName: "games",
   });
 
   
@@ -91,7 +97,7 @@ export default function Home() {
   useEffect(() => {
     const requestClient = new RequestNetwork({
       nodeConnectionConfig: {
-        baseURL: "https://goerli.gateway.request.network/",
+        baseURL: "https://xdai.gateway.request.network/",
       },
     });
     requestClient.fromRequestId(invoiceid as string).then(request => {
@@ -129,6 +135,10 @@ export default function Home() {
     }
   }
 
+  async function approveBet() {
+
+  }
+
   async function doubleYourIncome() {
     const requestClient = new RequestNetwork({
       nodeConnectionConfig: {
@@ -139,25 +149,25 @@ export default function Home() {
     const _request = await requestClient.fromRequestId(requestData!.requestId);
     let _requestData = _request.getData();
     try {
-      while (_requestData.state != Types.RequestLogic.STATE.ACCEPTED) {
-        acceptPayment()
-      }
+      // while (_requestData.state != Types.RequestLogic.STATE.ACCEPTED) {
+      //   acceptPayment()
+      // }
 
       const amount = _requestData.balance?.balance!;
       let doublingTx = bet({args: [amount]});
-      
 
+      // todo: add waitin
+      // let results = useContractRead({
+      //   abi: azuroAbi,
+      //   address: '0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4',
+      //   functionName: "games",
+      //   args: [_requestData.payee?.value]});
+      // readGamesData()
+      // console.log(results);
 
       // Poll the request balance once every second until payment is detected
       // TODO Add a timeout
-      while (_requestData.balance?.balance! < _requestData.expectedAmount) {
-        _requestData = await _request.refresh();
-        alert(`balance = ${_requestData.balance?.balance}`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      alert(`payment detected!`);
-      setRequestData(_requestData);
-      setStatus(APP_STATUS.REQUEST_PAID);
+      alert(`bet placed!`);
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
       alert(err);
@@ -175,7 +185,7 @@ export default function Home() {
       const _request = await requestClient.fromRequestId(requestData!.requestId);
       let _requestData = _request.getData();
 
-      const declareReceivedTx = await _request.declareReceivedPayment(_requestData.balance?.balance!, "thank you", requestData!.payee!);
+      const declareReceivedTx = await _request.declareReceivedPayment(_requestData.expectedAmount, "thank you", requestData!.payee!);
 
       while (_requestData.state != Types.RequestLogic.STATE.ACCEPTED) {
         _requestData = await _request.refresh();
@@ -203,6 +213,21 @@ export default function Home() {
 
     setStatus(APP_STATUS.PAYING);
     acceptPayment();
+  }
+
+  
+  function handleApproveBet(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+
+    setStatus(APP_STATUS.PAYING);
+    approveBet();
+  }
+
+  function handleDoubleYourIncome(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+
+    setStatus(APP_STATUS.PAYING);
+    doubleYourIncome();
   }
 
   async function approve() {
@@ -354,7 +379,7 @@ export default function Home() {
         <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre>
         </div>
           : null}
-
+{/* 
 {
        requestData?.payee?.value === address ? 
        <div>
@@ -383,6 +408,44 @@ export default function Home() {
         </button>
 
         <h4 className="text-lg font-semibold my-4">Request info</h4>
+        <p className="mb-2">App status: {status}</p>
+        <p className="mb-4">Request state: {requestData?.state}</p>
+        </div>
+          : null} */}
+{
+       requestData?.payee?.value === address ? 
+       <div>
+        <h4 className="text-lg font-semibold my-4">Manage a request</h4>
+       
+        <button
+            disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
+            onClick={() => switchNetwork?.(chains.find(chain => chain.network === requestData?.currencyInfo.network)?.id)}
+            className="btn w-full mb-4"
+        >
+            Switch to Payment Chain: {requestData?.currencyInfo.network}
+            {isSwitchNetworkLoading && " (switching)"}
+        </button>
+
+        <button type="button" onClick={handleApproveBet} className="btn w-full mb-4">
+            Approve
+        </button>
+        <div className="text-red-500 mb-4">
+            {!switchNetwork && "Programmatic switch network not supported by wallet."}
+        </div>
+        <div className="text-red-500 mb-4">
+            {error && error.message}
+        </div>
+
+        <div>
+        <button type="button" onClick={handleAcceptPayment} className="btn btn-primary" style={{ flex: 1, marginRight: '5px' }}>
+            ACCEPT
+        </button>
+        <button type="button" onClick={handleDoubleYourIncome} className="btn btn-primary" style={{ flex: 1}}>
+            DOUBLE
+        </button>
+        </div>
+
+        <h4 className="text-lg font-semibold my-4">Request info</h4>
         <button type="button" onClick={handleClear} className="btn btn-secondary w-full mb-4">
             Clear
         </button>
@@ -391,6 +454,7 @@ export default function Home() {
         <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre>
         </div>
           : null}
+
     </div>
 </div>
 
