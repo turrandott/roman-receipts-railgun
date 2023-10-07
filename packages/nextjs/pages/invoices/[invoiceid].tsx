@@ -473,7 +473,7 @@ export default function Home() {
               {approved ? "DOUBLE OR NOTHING" : "APPROVE DEGENERACY"}
             </button>
 
-            <div>
+            <div className="my-16">
               <h4 className="text-lg font-semibold my-4 text-center">Request info</h4>
               <p className="mb-2">App status: {status}</p>
               <p className="mb-4">Request state: {requestData?.state}</p>
