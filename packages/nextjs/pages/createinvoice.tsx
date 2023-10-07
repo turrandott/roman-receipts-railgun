@@ -21,10 +21,16 @@ enum APP_STATUS {
 }
 
 export default function CreateInvoice() {
-  const [storageChain, setStorageChain] = useState("5");
+  const [storageChain, setStorageChain] = useState("100");
   const [expectedAmount, setExpectedAmount] = useState("");
-  const [currency, setCurrency] = useState("5_0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc");
+
+  const [currency, setCurrency] = useState(
+    "137_0xc2132D05D31c914a87C6611C10748AEb04B58e8F"
+  );
+
+
   const [paymentRecipient, setPaymentRecipient] = useState("");
+  const [zkAddressRecipient, setZkAddressRecipient] = useState("");
   const [payerIdentity, setPayerIdentity] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [reason, setReason] = useState("");
@@ -72,6 +78,7 @@ export default function CreateInvoice() {
         // Consider using rnf_invoice format from @requestnetwork/data-format package.
         reason: reason,
         dueDate: dueDate,
+        zkAddressRecipient: zkAddressRecipient,
       },
       signer: {
         type: Types.Identity.TYPE.ETHEREUM_ADDRESS,
@@ -159,9 +166,8 @@ export default function CreateInvoice() {
                 </option>
               ))}
             </select>
-          </label>
-
-          <label className="block">
+            </label>
+       <label className="block">
             Amount *
             <input
               type="number"
@@ -182,19 +188,20 @@ export default function CreateInvoice() {
             >
               {Array.from(currencies.entries()).map(([key, value]) => (
                 <option key={key} value={key}>
-                  {value.symbol} ({value.network})
+                  {value.symbol}
                 </option>
               ))}
             </select>
           </label>
-
           <label className="block">
-            Payment Recipient
+            ZkAddress Recipient
             <input
               type="text"
-              name="payment-recipient"
-              placeholder={address}
-              onChange={e => setPaymentRecipient(e.target.value)}
+
+              name="payment-recipient-zkaddress"
+              placeholder="0zk..."
+              onChange={(e) => setZkAddressRecipient(e.target.value)}
+
               className="form-input mt-2 block w-full input border-2 border-secondary"
             />
           </label>

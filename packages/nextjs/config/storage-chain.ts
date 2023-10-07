@@ -6,14 +6,14 @@ interface StorageChain {
   
   // key: {chainId}
   export const storageChains = new Map<string, StorageChain>([
-    [
-      "5",
-      {
-        name: "Goerli",
-        type: "testnet",
-        gateway: "https://goerli.gateway.request.network/",
-      },
-    ],
+    // [
+    //   "5",
+    //   {
+    //     name: "Goerli",
+    //     type: "testnet",
+    //     gateway: "https://goerli.gateway.request.network/",
+    //   },
+    // ],
     [
       "100",
       {

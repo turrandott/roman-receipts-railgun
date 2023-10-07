@@ -20,7 +20,7 @@ const {address} = useAccount();
 useEffect(() => {
   const requestClient = new RequestNetwork({
     nodeConnectionConfig: {
-      baseURL: "https://goerli.gateway.request.network/",
+      baseURL: "https://xdai.gateway.request.network/",
     },
   });
   requestClient
