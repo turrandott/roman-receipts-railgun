@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { abi as azuroAbi } from "../../generated/azuroDouble.json";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { currencies } from "../../config/currency";
@@ -15,7 +16,7 @@ import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "
 import { RequestNetwork, Types, Utils } from "@requestnetwork/request-client.js";
 import { Web3SignatureProvider } from "@requestnetwork/web3-signature";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
-import { useAccount, useNetwork, useSwitchNetwork, useWalletClient } from "wagmi";
+import { useAccount, useNetwork, useSwitchNetwork, useWalletClient, useContractWrite  } from "wagmi";
 
 const calculateStatus = (
   state: string,
@@ -47,6 +48,7 @@ enum APP_STATUS {
   APPROVED = "approved",
   PAYING = "paying",
   REQUEST_PAID = "request paid",
+  PAYMENT_ACCEPTED = "payment accepted",
   ERROR_OCCURRED = "error occurred",
 }
 
@@ -69,6 +71,18 @@ export default function Home() {
   const [requestData, setRequestData] = useState<Types.IRequestDataWithEvents>();
   const provider = useEthersV5Provider();
   const signer = useEthersV5Signer();
+  const { write: bet } = useContractWrite({
+    abi: azuroAbi,
+    address: '0xA68fdE7b2bA954c2CECBFb045BcA7be16C782535',
+    functionName: "bet",
+  });
+  const { write: betPayout } = useContractWrite({
+    abi: azuroAbi,
+    address: '0xA68fdE7b2bA954c2CECBFb045BcA7be16C782535',
+    functionName: "betPayout",
+  });
+
+  
 
   useEffect(() => {
     console.log(invoiceid);
@@ -110,7 +124,69 @@ export default function Home() {
       setRequestData(_requestData);
       setStatus(APP_STATUS.REQUEST_PAID);
     } catch (err) {
-      setStatus(APP_STATUS.APPROVED);
+      setStatus(APP_STATUS.ERROR_OCCURRED);
+      alert(err);
+    }
+  }
+
+  async function doubleYourIncome() {
+    const requestClient = new RequestNetwork({
+      nodeConnectionConfig: {
+        baseURL: storageChains.get(storageChain)!.gateway,
+      },
+    });
+
+    const _request = await requestClient.fromRequestId(requestData!.requestId);
+    let _requestData = _request.getData();
+    try {
+      while (_requestData.state != Types.RequestLogic.STATE.ACCEPTED) {
+        acceptPayment()
+      }
+
+      const amount = _requestData.balance?.balance!;
+      let doublingTx = bet({args: [amount]});
+      
+
+
+      // Poll the request balance once every second until payment is detected
+      // TODO Add a timeout
+      while (_requestData.balance?.balance! < _requestData.expectedAmount) {
+        _requestData = await _request.refresh();
+        alert(`balance = ${_requestData.balance?.balance}`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      alert(`payment detected!`);
+      setRequestData(_requestData);
+      setStatus(APP_STATUS.REQUEST_PAID);
+    } catch (err) {
+      setStatus(APP_STATUS.ERROR_OCCURRED);
+      alert(err);
+    }
+  }
+
+  async function acceptPayment() {
+    const requestClient = new RequestNetwork({
+      nodeConnectionConfig: {
+        baseURL: storageChains.get(storageChain)!.gateway,
+      },
+    });
+
+    try {
+      const _request = await requestClient.fromRequestId(requestData!.requestId);
+      let _requestData = _request.getData();
+
+      const declareReceivedTx = await _request.declareReceivedPayment(_requestData.balance?.balance!, "thank you", requestData!.payee!);
+
+      while (_requestData.state != Types.RequestLogic.STATE.ACCEPTED) {
+        _requestData = await _request.refresh();
+        alert(`state = ${_requestData.state}`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      alert(`payment accepted!`);
+      setRequestData(_requestData);
+      setStatus(APP_STATUS.PAYMENT_ACCEPTED);
+    } catch (err) {
+      setStatus(APP_STATUS.ERROR_OCCURRED);
       alert(err);
     }
   }
