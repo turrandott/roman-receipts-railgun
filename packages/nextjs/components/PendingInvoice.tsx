@@ -11,6 +11,7 @@ const PendingInvoice: React.FC<{ request: any }> = ({ request }) => {
 
     return (
         <div className={`${background} p-4 rounded-lg shadow-md text-center space-y-5`}>
+          <h1 className='text-center font-bold'>{request.contentData.reason}</h1>
           <p className="text-sm mb-2">
             <b>Date:</b> {request.contentData.dueDate}
           </p>
