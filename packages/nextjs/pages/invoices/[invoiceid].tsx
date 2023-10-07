@@ -144,97 +144,11 @@ export default function Home() {
     approve();
   }
 
-  async function createRequest() {
-    const signatureProvider = new Web3SignatureProvider(walletClient);
-    const requestClient = new RequestNetwork({
-      nodeConnectionConfig: {
-        baseURL: storageChains.get(storageChain)!.gateway,
-      },
-      signatureProvider,
-    });
-    const requestCreateParameters: Types.ICreateRequestParameters = {
-      requestInfo: {
-        currency: {
-          type: currencies.get(currency)!.type,
-          value: currencies.get(currency)!.value,
-          network: currencies.get(currency)!.network,
-        },
-        expectedAmount: parseUnits(expectedAmount as `${number}`, currencies.get(currency)!.decimals).toString(),
-        payee: {
-          type: Types.Identity.TYPE.ETHEREUM_ADDRESS,
-          value: address as string,
-        },
-        timestamp: Utils.getCurrentTimestampInSecond(),
-      },
-      paymentNetwork: {
-        id: Types.Extension.PAYMENT_NETWORK_ID.ERC20_FEE_PROXY_CONTRACT,
-        parameters: {
-          paymentNetworkName: currencies.get(currency)!.network,
-          paymentAddress: paymentRecipient || address,
-          feeAddress: zeroAddress,
-          feeAmount: "0",
-        },
-      },
-      contentData: {
-        // Tip: Consider using rnf_invoice v0.0.3 format from @requestnetwork/data-format
-        reason: reason,
-        dueDate: dueDate,
-      },
-      signer: {
-        type: Types.Identity.TYPE.ETHEREUM_ADDRESS,
-        value: address as string,
-      },
-    };
 
-    if (payerIdentity.length > 0) {
-      requestCreateParameters.requestInfo.payer = {
-        type: Types.Identity.TYPE.ETHEREUM_ADDRESS,
-        value: payerIdentity,
-      };
-    }
 
-    try {
-      setStatus(APP_STATUS.PERSISTING_TO_IPFS);
-      const request = await requestClient.createRequest(requestCreateParameters);
 
-      setStatus(APP_STATUS.PERSISTING_ON_CHAIN);
-      setRequestData(request.getData());
-      const confirmedRequestData = await request.waitForConfirmation();
 
-      setStatus(APP_STATUS.REQUEST_CONFIRMED);
-      setRequestData(confirmedRequestData);
-    } catch (err) {
-      setStatus(APP_STATUS.ERROR_OCCURRED);
-      alert(err);
-    }
-  }
 
-  function canSubmit() {
-    return (
-      status !== APP_STATUS.SUBMITTING &&
-      !isDisconnected &&
-      !isConnecting &&
-      !isError &&
-      !isLoading &&
-      storageChain.length > 0 &&
-      // Payment Recipient is empty || isAddress
-      (paymentRecipient.length === 0 || (paymentRecipient.startsWith("0x") && paymentRecipient.length === 42)) &&
-      // Payer is empty || isAddress
-      (payerIdentity.length === 0 || (payerIdentity.startsWith("0x") && payerIdentity.length === 42)) &&
-      expectedAmount.length > 0 &&
-      currency.length > 0
-    );
-  }
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!canSubmit()) {
-      return;
-    }
-    setRequestData(undefined);
-    setStatus(APP_STATUS.SUBMITTING);
-    createRequest();
-  }
 
   function handleClear(_: React.MouseEvent<HTMLButtonElement>) {
     setRequestData(undefined);

@@ -2,77 +2,14 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { BanknotesIcon, ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/outline";
+import { Header } from "~~/components/Header";
 
 function Home() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   return (
     <div className="bg-white text-black">
-      <header className="navbar fixed top-0 left-0 z-50 w-full border-stroke bg-white duration-300">
-        <div className="container relative lg:max-w-[1305px] lg:px-10">
-          <div className="flex items-center justify-between">
-            <div className="block py-4 lg:py-0">
-              <a href="index.html" className="block max-w-[145px] sm:max-w-[180px]">
-                <Image src="/icon.png" alt="logo" width={50} height={50} />
-              </a>
-            </div>
-            <button
-              onClick={() => setIsOpen(true)}
-              className="navbarOpen absolute right-4 top-1/2 z-50 flex h-10 w-10 -translate-y-1/2 flex-col items-center justify-center space-y-[6px] font-bold lg:hidden"
-              aria-label="navbarOpen"
-              name="navbarOpen"
-            >
-              <span className="block h-[2px] w-7 bg-black "></span>
-              <span className="block h-[2px] w-7 bg-black "></span>
-              <span className="block h-[2px] w-7 bg-black "></span>
-            </button>
-
-            <div className={`menu-wrapper relative ${isOpen ? "" : "hidden"} justify-between lg:flex`}>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="navbarClose fixed top-10 right-10 z-[9999] flex h-10 w-10 flex-col items-center justify-center font-bold lg:hidden"
-                name="navbarClose"
-                aria-label="navbarClose"
-              >
-                <span className="block h-[2px] w-7 rotate-45 bg-black "></span>
-                <span className="-mt-[2px] block h-[2px] w-7 -rotate-45 bg-black "></span>
-              </button>
-
-              <nav className="fixed top-0 left-0 z-[999] flex h-screen w-full items-center justify-center bg-white bg-opacity-95 text-center backdrop-blur-sm lg:static lg:h-auto lg:w-max lg:bg-transparent lg:backdrop-blur-none ">
-                <ul className="items-center space-y-3 lg:flex lg:space-x-8 lg:space-y-0 xl:space-x-10">
-                  <li className="menu-item">
-                    <Link
-                      onClick={() => setIsOpen(false)}
-                      href="createinvoice"
-                      className="menu-scroll inline-flex items-center text-base font-medium text-black hover:text-redpraha   lg:py-7"
-                    >
-                      Create Invoice
-                    </Link>
-                  </li>
-                  <li className="menu-item">
-                    <a
-                      onClick={() => setIsOpen(false)}
-                      href="/profile"
-                      className="menu-scroll inline-flex items-center text-base font-medium text-black hover:text-redpraha   lg:py-7"
-                    >
-                      Profile
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-
-            <div className="mr-[60px] flex items-center justify-end lg:mr-0">
-              <a
-                href="/dashboard"
-                className="rounded-md bg-secondary py-[6px] px-[12px] xl:py-[10px] xl:px-[30px] text-base font-medium text-white hover:bg-opacity-90"
-              >
-                Dapp
-              </a>
-            </div>
-          </div>
-        </div>
-      </header>
+    
 
       <main>
         <section id="home" className="pt-[135px]">
