@@ -8,7 +8,7 @@ import { currencies } from "../../config/currency";
 import { storageChains } from "../../config/storage-chain";
 import { useEthersV5Provider } from "../../hooks/ethers/use-ethers-v5-provider";
 import { useEthersV5Signer } from "../../hooks/ethers/use-ethers-v5-signer";
-import styles from "@/app/page.module.css";
+
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
@@ -504,8 +504,7 @@ export default function Home() {
         <p className="mb-2">App status: {status}</p>
         <p className="mb-4">Request state: {requestData?.state}</p>
         </div>
-          : null} */}
-{
+          : null} {
        requestData?.payee?.value === address ? 
        <div>
         <h4 className="text-lg font-semibold my-4">Manage a request</h4>
