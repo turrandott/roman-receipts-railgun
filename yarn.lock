@@ -12291,7 +12291,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@github:Railgun-Community/ethers.js, ethers@github:Railgun-Community/ethers.js#v6.7.6":
+"ethers@github:Railgun-Community/ethers.js#v6.7.6":
   version: 6.7.6
   resolution: "ethers@https://github.com/Railgun-Community/ethers.js.git#commit=8eee17db07ce57bcc453855d6aa9b945eb47dfa4"
   dependencies:
@@ -15377,6 +15377,17 @@ __metadata:
     object.assign: ^4.1.4
     object.values: ^1.1.6
   checksum: f4b05fa4d7b5234230c905cfa88d36dc8a58a6666975a3891429b1a8cdc8a140bca76c297225cb7a499fad25a2c052ac93934449a2c31a44fc9edd06c773780a
+  languageName: node
+  linkType: hard
+
+"keccak256@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "keccak256@npm:1.0.6"
+  dependencies:
+    bn.js: ^5.2.0
+    buffer: ^6.0.3
+    keccak: ^3.0.2
+  checksum: decafb4b37adcfa6d06b6a5d28546d0d7a9f01ccf4b8cc8963cf8188fcc79a230d7e22988e860813623c602d764259734423e38fd7b9aadfeb409d6928a1d4cf
   languageName: node
   linkType: hard
 
@@ -19883,8 +19894,9 @@ __metadata:
   dependencies:
     "@railgun-community/shared-models": ^5.6.5
     "@railgun-community/wallet": ^5.10.15
-    ethers: "github:Railgun-Community/ethers.js"
+    ethers: "github:Railgun-Community/ethers.js#v6.7.6"
     husky: ~8.0.3
+    keccak256: ^1.0.6
     lint-staged: ~13.2.2
   languageName: unknown
   linkType: soft
