@@ -157,7 +157,6 @@ export default function Home() {
     try {
       const _request = await requestClient.fromRequestId(requestData?.requestId);
       let _requestData = _request.getData();
-      // console.log({_requestData})
       const paymentTx = await payRequest(_requestData, signer);
       await paymentTx.wait(2);
 
