@@ -116,10 +116,13 @@ const Dashboard = () => {
                     <tr key={request.timestamp}>
                       <td>{request.timestamp}</td>
                       <td >
-                        <Link href={`/invoices/${request.requestId}`}>
-                          {request.requestId.slice(0, 4)}...
-                          {request.requestId.slice(62, 66)}
-                        </Link>
+                      <button
+                      className="btn"
+                        ><Link href={`/invoices/${request.requestId}`}>
+                        {request.requestId.slice(0, 4)}...
+                        {request.requestId.slice(62, 66)}
+                      </Link></button>
+                        
                       </td>
                       <td>
                         {request.payer?.value.slice(0, 5)}...

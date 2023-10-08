@@ -12,8 +12,8 @@ function Home() {
   ];
 
   return (
-    <div className="bg-white text-black">
-      <main>
+    // <div className="bg-white text-black">
+      <main className="min-h-screen bg-white text-black">
         <section id="home" className="pt-20">
           <div className="container lg:max-w-[1305px] lg:px-10">
             <div className="-mx-4 flex flex-wrap items-center">
@@ -218,7 +218,7 @@ function Home() {
           </div>
         </section>
       </main>
-    </div>
+    // </div>
   );
 }
 

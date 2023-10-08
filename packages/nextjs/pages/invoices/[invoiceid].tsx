@@ -24,6 +24,9 @@ import {
   useSwitchNetwork,
   useWalletClient,
 } from "wagmi";
+import Url from "./url";
+import Loading from "~~/components/Loading";
+import toast from "react-hot-toast";
 
 const calculateStatus = (state: string, expectedAmount: bigint, balance: bigint) => {
   if (balance >= expectedAmount) {
@@ -73,9 +76,11 @@ export default function Home() {
   const [requestData, setRequestData] = useState<Types.IRequestDataWithEvents>();
   const provider = useEthersV5Provider();
   const signer = useEthersV5Signer();
+  const [loading, setLoading] = useState(true);
+
+  const [zkAddress, setZkAddress] = useState(null);
 
   let payout: number;
-  console.log(router);
 
   const { write: bet } = useContractWrite({
     address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
@@ -117,36 +122,30 @@ export default function Home() {
   });
 
   useEffect(() => {
-    console.log(invoiceid);
-  });
-
-  useEffect(() => {
+    setLoading(true);
     const requestClient = new RequestNetwork({
       nodeConnectionConfig: {
         baseURL: "https://xdai.gateway.request.network/",
       },
     });
-    requestClient.fromRequestId(invoiceid as string).then(request => {
-      setRequestData(request.getData());
-      console.log(request.getData());
+
+    requestClient
+      .fromRequestId(invoiceid as string)
+      .then(request => {
+        const _requestData = request.getData();
+        setRequestData(_requestData);
+        setZkAddress(_requestData.contentData.zkAddressRecipient ?? null);
+        // console.log(request.getData());
+    }).finally(()=> {
+      setLoading(false)
     });
   }, [address, invoiceid]);
 
   const getBaseUrl = () => {
     return "https://xdai.gateway.request.network/";
-
-    // const url = storageChains.get(storageChain)?.gateway;
-    // console.log("url", url);
-    // return url;
-    // if (chain.id === 137) return "https://polygon.gateway.request.network/";
-    // if (chain.id === 5) return "https://goerli.gateway.request.network/";
-    // console.log("getBaseUrl");
-    // console.log(chain);
-
-    // //"https://goerli.gateway.request.network/"
-
-    // return "https://xdai.gateway.request.network/";
   };
+
+  // console.log(requestData)
 
   // FUNCTIONS
   async function payTheRequest() {
@@ -157,12 +156,9 @@ export default function Home() {
       },
     });
 
-    console.log({ requestClient });
-
     try {
       const _request = await requestClient.fromRequestId(requestData?.requestId);
       let _requestData = _request.getData();
-      console.log({ _requestData });
       const paymentTx = await payRequest(_requestData, signer);
       await paymentTx.wait(2);
 
@@ -173,7 +169,7 @@ export default function Home() {
         alert(`balance = ${_requestData.balance?.balance}`);
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
-      alert(`payment detected!`);
+      toast.success(`Payment detected!`);
       setRequestData(_requestData);
       setStatus(APP_STATUS.REQUEST_PAID);
     } catch (err) {
@@ -304,9 +300,9 @@ export default function Home() {
       if (
         getPaymentNetworkExtension(_requestData)?.id === Types.Extension.PAYMENT_NETWORK_ID.ERC20_FEE_PROXY_CONTRACT
       ) {
-        alert(`ERC20 Request detected. Checking approval...`);
+        toast.success(`ERC20 Request detected. Checking approval...`);
         const _hasErc20Approval = await hasErc20Approval(_requestData, address as string, provider);
-        alert(`_hasErc20Approval = ${_hasErc20Approval}`);
+        toast.success(`_hasErc20Approval = ${_hasErc20Approval}`);
         if (!_hasErc20Approval) {
           const approvalTx = await approveErc20(_requestData, signer);
           await approvalTx.wait(2);
@@ -335,8 +331,8 @@ export default function Home() {
       setStatus(APP_STATUS.PAYING);
       payTheRequest(); // Continue with the payment process
     } else {
-      // Handle the error, for example, by showing an alert or updating the state to show an error message
-      alert("The digits entered do not match. Please try again.");
+      // alert("The digits entered do not match. Please try again.");
+      toast.error("Not implemented yet");
     }
   }
 
@@ -392,50 +388,66 @@ export default function Home() {
     }
   }
 
+  function handlePayZk(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    toast.error("Not implemented yet");
+  }
+
+  if (loading) return <Loading />;
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 mt-12">
         <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
         <p className="text-xs break-all">id: {invoiceid}</p>
-        <div className="flex justify-between mb-2">
-          <span className="font-medium">From:</span>
 
-          <span className="hidden lg:block">{requestData?.payer?.value}</span>
-          <span className="block lg:hidden">
-            {requestData?.payer?.value.slice(0, 5) + "..." + requestData?.payer?.value.slice(35, 41)}
-          </span>
+        <div className="my-8">
+          <div className="flex justify-between">
+            <span className="font-medium">From:</span>
+            <span className="hidden lg:block">{requestData?.payer?.value}</span>
+            <span className="block lg:hidden">
+              {requestData?.payer?.value.slice(0, 5) + "..." + requestData?.payer?.value.slice(35, 41)}
+            </span>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="font-medium">To:</span>
+            <span className="hidden lg:block">{requestData?.payee?.value}</span>
+            <span className="block lg:hidden">
+              {requestData?.payee?.value.slice(0, 5) + "..." + requestData?.payee?.value.slice(35, 41)}
+            </span>{" "}
+          </div>
+
+          {zkAddress && (
+            <div className="flex justify-between">
+              <span className="font-medium">To zk address:</span>
+              <span className="block">{zkAddress.slice(0, 5) + "..." + zkAddress.slice(35, 41)}</span>{" "}
+            </div>
+          )}
         </div>
 
-        <div className="flex justify-between mb-2">
-          <span className="font-medium">To:</span>
-          <span className="hidden lg:block">{requestData?.payee?.value}</span>
-          <span className="block lg:hidden">
-            {requestData?.payee?.value.slice(0, 5) + "..." + requestData?.payee?.value.slice(35, 41)}
-          </span>{" "}
-          {/* Assuming this is correct, but you may want to adjust this if "To" and "From" values are different */}
-        </div>
-
-        <div className="flex justify-between">
-          <span className="font-medium">Amount:</span>
-          <span>
-            {requestData?.expectedAmount ? formatUnits(BigInt(requestData?.expectedAmount as any), 18) : null}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium">Reason:</span>
-          <span>{requestData?.contentData.reason}</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span className="font-medium">Status:</span>
-          <span>
-            {requestData &&
-              calculateStatus(
-                requestData?.state as any,
-                BigInt(requestData?.expectedAmount as any),
-                BigInt(requestData?.balance?.balance || 0),
-              )}
-          </span>
+        <div className="my-8">
+          <div className="flex justify-between">
+            <span className="font-medium">Amount:</span>
+            <span>
+              {requestData?.expectedAmount ? formatUnits(BigInt(requestData?.expectedAmount as any), 18) : null}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="font-medium">Reason:</span>
+            <span>{requestData?.contentData.reason}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="font-medium">Status:</span>
+            <span>
+              {requestData &&
+                calculateStatus(
+                  requestData?.state as any,
+                  BigInt(requestData?.expectedAmount as any),
+                  BigInt(requestData?.balance?.balance || 0),
+                )}
+            </span>
+          </div>
         </div>
 
         {requestData?.payer?.value === address ? (
@@ -457,7 +469,7 @@ export default function Home() {
 
         {requestData?.payer?.value === address ? (
           <div className="my-16">
-            <h4 className="text-lg font-semibold my-4">Pay a request</h4>
+            <h4 className="text-lg font-semibold my-4 text-center">Pay an invoice</h4>
 
             <button
               disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
@@ -507,21 +519,26 @@ export default function Home() {
               </div>
             </dialog>
 
-            <button type="button" onClick={handlePay} className="btn btn-primary w-full mb-4">
-              Pay now
-            </button>
+            {!zkAddress ? (
+              <button type="button" onClick={handlePay} className="btn btn-primary w-full mb-4">
+                Pay now
+              </button>
+            ) : (
+              <button type="button" onClick={handlePayZk} className="btn btn-primary w-full mb-4">
+                Pay via Railgun
+              </button>
+            )}
 
-            <h4 className="text-lg font-semibold my-4">Request info</h4>
-
-            <p className="mb-2">App status: {status}</p>
-            <p className="mb-4">Request state: {requestData?.state}</p>
+            {/* <h4 className="text-lg font-semibold my-4">Info</h4> */}
+            {/* <p className="">App status: {status}</p>
+            <p className="">Request state: {requestData?.state}</p> */}
             {/* <pre className="bg-gray-200 p-4 rounded">{JSON.stringify(requestData, undefined, 2)}</pre> */}
           </div>
         ) : null}
 
-        {requestData?.payee?.value === address ? (
+        {requestData?.payee?.value === address && (
           <div className="my-16">
-            <h4 className="text-lg font-semibold my-4 text-center">Manage a request</h4>
+            <h4 className="text-lg font-semibold my-4 text-center">Manage</h4>
 
             <button
               disabled={!switchNetwork || !requestData || requestData?.currencyInfo.network === chain?.network}
@@ -549,14 +566,16 @@ export default function Home() {
               {degeneracyButtonTextManager()}
             </button>
 
-            <div className="my-16">
-              <h4 className="text-lg font-semibold my-4 text-center">Request info</h4>
-              <p className="mb-1">App status: {status}</p>
-              <p className="mb-2">Request state: {requestData?.state}</p>
+            <div className="my-8">
+              <h4 className="text-lg font-semibold my-4 text-center">Info</h4>
+              <p className="my-0">App status: {status}</p>
+              <p className="my-0">Invoice state: {requestData?.state}</p>
             </div>
-            <Url />
           </div>
-        ) : null}
+        )}
+        <div className="my-16">
+          <Url />
+        </div>
       </div>
     </div>
   );
