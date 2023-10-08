@@ -146,12 +146,13 @@ const Dashboard = () => {
       )}
 
       {activeButton === "pendingInvoices" && (
-        <div className="App p-8 bg-gray-100 min-h-screen my-12">
+        <div className="App p-8 bg-gray-100 min-h-screen">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* You must pay column */}
             <div>
               <h2 className="text-xl font-bold mb-4 text-center">To pay</h2>
-              <div className="grid grid-cols-1 gap-4">
+              {/* <div className="grid grid-cols-1 gap-4"> */}
+              <div className="flex flex-row flex-center justify-center flex-wrap">
 
                 {getRequestsToPay().map((request: any) => (
                   <PendingInvoice request={request} key={request.timestamp} />
