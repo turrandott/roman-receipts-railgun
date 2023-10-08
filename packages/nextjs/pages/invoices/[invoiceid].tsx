@@ -24,7 +24,6 @@ import {
   useSwitchNetwork,
   useWalletClient,
 } from "wagmi";
-import Url from "./url";
 import Loading from "~~/components/Loading";
 import toast from "react-hot-toast";
 
