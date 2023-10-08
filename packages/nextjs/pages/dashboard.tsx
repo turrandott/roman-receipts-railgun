@@ -166,7 +166,7 @@ const Dashboard = () => {
             {/* You must be paid column */}
             <div>
               <h2 className="text-xl font-bold mb-4 text-center">To receive</h2>
-              <div className="grid grid-cols-1 gap-4">
+              <div className="flex flex-row flex-center justify-center flex-wrap">
                 {totalRequestHistory
                   ?.filter((request: any) => {
                     return calculateStatus(
