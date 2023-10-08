@@ -9,6 +9,7 @@ import azuroAbi from "../../generated/azuroDoubleAbi.json";
 import testabi from "../../generated/testabi.json";
 import { useEthersV5Provider } from "../../hooks/ethers/use-ethers-v5-provider";
 import { useEthersV5Signer } from "../../hooks/ethers/use-ethers-v5-signer";
+import Url from "./url";
 import "@rainbow-me/rainbowkit/styles.css";
 import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
 import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "@requestnetwork/payment-processor";
@@ -23,7 +24,6 @@ import {
   useSwitchNetwork,
   useWalletClient,
 } from "wagmi";
-import Url from "./url";
 
 const calculateStatus = (state: string, expectedAmount: bigint, balance: bigint) => {
   if (balance >= expectedAmount) {
@@ -55,6 +55,7 @@ enum APP_STATUS {
   BET_PLACED = "bet placed",
   BET_WON = "double won",
   BET_LOST = "double lost",
+  PAYOUT_WITHDRAWN = "payout withdrawn",
   ERROR_OCCURRED = "error occurred",
 }
 
@@ -74,7 +75,7 @@ export default function Home() {
   const signer = useEthersV5Signer();
 
   let payout: number;
-  console.log(router)
+  console.log(router);
 
   const { write: bet } = useContractWrite({
     address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
@@ -97,12 +98,12 @@ export default function Home() {
   const { write: withdrawAmountWon } = useContractWrite({
     address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
     abi: azuroAbi,
-    functionName: "games",
+    functionName: "betPayout",
   });
 
   useContractEvent({
-    address: "0x853e0A7A0906102099eB24c5018c6A68B4C45c5b",
-    abi: testabi,
+    address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
+    abi: azuroAbi,
     eventName: "GameResultFulfilled",
     listener(log) {
       payout = parseInt(log[0]["args"]["_payout"], 10);
@@ -339,8 +340,28 @@ export default function Home() {
     }
   }
 
+  // this part is needed to handle the withdrawal
+  function withdrawPayout() {
+    try {
+      withdrawAmountWon();
+      setStatus(APP_STATUS.PAYOUT_WITHDRAWN);
+    } catch (err) {
+      setStatus(APP_STATUS.ERROR_OCCURRED);
+      alert(err);
+  }
+
+  function handleWidthdrawPayout(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    withdrawPayout();
+  }
+
+
+
   function degeneracyButtonTextManager(): string {
-    if (status === APP_STATUS.BET_LOST) {
+    if (status === APP_STATUS.PAYOUT_WITHDRAWN){
+      return "BUY YOURSELF A GELATO";
+    }
+    else if (status === APP_STATUS.BET_LOST) {
       return "SAY GOODBYE TO YOUR WIFE...";
     } else if (status === APP_STATUS.BET_WON) {
       return "YOUR CHILDREN WON'T STARVE THIS TIME!";
@@ -354,7 +375,7 @@ export default function Home() {
   }
 
   function disableDegenButton(): boolean {
-    if (status === APP_STATUS.BET_PLACED) {
+    if (status === APP_STATUS.BET_PLACED || status === APP_STATUS.BET_LOST) {
       return true;
     } else {
       return false;
