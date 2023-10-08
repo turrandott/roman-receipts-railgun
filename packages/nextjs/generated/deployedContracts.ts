@@ -5,7 +5,7 @@ const contracts = {
       name: "goerli",
       contracts: {
         AcceptPayments: {
-          address: "0x2554657b368346a42725Ceb86466dc09884F84EC",
+          address: "0x853e0A7A0906102099eB24c5018c6A68B4C45c5b",
           abi: [
             {
               inputs: [],
@@ -16,36 +16,41 @@ const contracts = {
               anonymous: false,
               inputs: [
                 {
-                  indexed: false,
+                  indexed: true,
+                  internalType: "uint256",
+                  name: "_requestId",
+                  type: "uint256",
+                },
+                {
+                  indexed: true,
                   internalType: "address",
-                  name: "from",
+                  name: "_player",
                   type: "address",
                 },
                 {
                   indexed: false,
-                  internalType: "uint256",
-                  name: "amount",
-                  type: "uint256",
+                  internalType: "uint128",
+                  name: "_amount",
+                  type: "uint128",
+                },
+                {
+                  indexed: false,
+                  internalType: "uint128",
+                  name: "_payout",
+                  type: "uint128",
                 },
               ],
-              name: "PaymentReceived",
+              name: "GameResultFulfilled",
               type: "event",
             },
             {
               inputs: [],
-              name: "deposit",
-              outputs: [],
-              stateMutability: "payable",
-              type: "function",
-            },
-            {
-              inputs: [],
-              name: "getBalance",
+              name: "amount",
               outputs: [
                 {
-                  internalType: "uint256",
+                  internalType: "uint128",
                   name: "",
-                  type: "uint256",
+                  type: "uint128",
                 },
               ],
               stateMutability: "view",
@@ -53,7 +58,27 @@ const contracts = {
             },
             {
               inputs: [],
-              name: "owner",
+              name: "emitEvent",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "payout",
+              outputs: [
+                {
+                  internalType: "uint128",
+                  name: "",
+                  type: "uint128",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "player",
               outputs: [
                 {
                   internalType: "address",
@@ -66,9 +91,15 @@ const contracts = {
             },
             {
               inputs: [],
-              name: "withdraw",
-              outputs: [],
-              stateMutability: "nonpayable",
+              name: "requestId",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              stateMutability: "view",
               type: "function",
             },
           ],
