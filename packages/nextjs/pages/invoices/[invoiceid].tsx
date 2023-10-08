@@ -446,7 +446,7 @@ export default function Home() {
           <div className="flex justify-between">
             <span className="font-medium">Amount:</span>
             <span>
-              {requestData?.expectedAmount ? formatUnits(BigInt(requestData?.expectedAmount as any), 6) : null}
+              {requestData?.expectedAmount ? formatUnits(BigInt(requestData?.expectedAmount as any), 6)  : null} USDT
             </span>
           </div>
           <div className="flex justify-between">

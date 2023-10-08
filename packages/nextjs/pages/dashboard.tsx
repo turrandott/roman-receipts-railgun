@@ -132,7 +132,7 @@ const Dashboard = () => {
                         {request.payer?.value.slice(39, 42)}
                       </td>
                       <td>{request.currency}</td>
-                      <td>{formatUnits(BigInt(request.expectedAmount), 18)}</td>
+                      <td>{formatUnits(BigInt(request.expectedAmount), 6)}</td>
                       <td>{request.contentData.reason}</td>
                       <td>{request.contentData.dueDate}</td>
                       <td>
@@ -142,7 +142,7 @@ const Dashboard = () => {
                           BigInt(request.balance?.balance || 0),
                         )}
                       </td>
-                      <td>{formatUnits(BigInt(request.balance?.balance || 0), 18)}</td>
+                      <td>{formatUnits(BigInt(request.balance?.balance || 0), 6)}</td>
                     </tr>
                   ))}
               </tbody>
