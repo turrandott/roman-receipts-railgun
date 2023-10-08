@@ -1,4 +1,5 @@
 import React from "react";
+import { formatUnits } from "viem";
 import Link from "next/link";
 import { useAccount } from "wagmi";
 
@@ -21,7 +22,7 @@ const PendingInvoice: React.FC<{ request: any }> = ({ request }) => {
         </p>
         <p className="text-sm my-1">
           <b>Amount: </b>
-          {request.expectedAmount}
+          {formatUnits(BigInt(request.expectedAmount), 6)}
         </p>
         <p className="text-sm my-1">
           <b>Invoice ID: </b>
