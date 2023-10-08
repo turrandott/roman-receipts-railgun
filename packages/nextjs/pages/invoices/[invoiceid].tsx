@@ -354,11 +354,11 @@ export default function Home() {
 
   function degeneracyButtonTextManager(): string {
     if (status === APP_STATUS.PAYOUT_WITHDRAWN) {
-      return "BUY YOURSELF A GELATO";
+      return "WITHDRAW CONFIRMED: BUY YOURSELF A GELATO";
     } else if (status === APP_STATUS.BET_LOST) {
-      return "SAY GOODBYE TO YOUR WIFE...";
+      return "YOU LOST: SAY GOODBYE TO YOUR MONEY...";
     } else if (status === APP_STATUS.BET_WON) {
-      return "YOUR CHILDREN WON'T STARVE THIS TIME!";
+      return "YOU WON: YOUR CHILDREN WON'T STARVE THIS TIME!";
     } else if (status === APP_STATUS.BET_PLACED) {
       return "CALCULATING... PLEASE WAIT";
     } else if (status === APP_STATUS.DEGENERACY_APPROVED) {
@@ -377,7 +377,9 @@ export default function Home() {
   }
 
   function degeneracyButtonManager(e: any): any {
-    if (!approved) {
+    if (status === APP_STATUS.BET_WON) {
+      return handleWidthdrawPayout(e);
+    } else if (!approved) {
       return handleApproveBet(e);
     } else if (!fetching && status === APP_STATUS.DEGENERACY_APPROVED) {
       return handleDoubleYourIncome(e);
