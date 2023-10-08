@@ -121,17 +121,37 @@ export default function Home() {
     });
   }, [address, invoiceid]);
 
+  const getBaseUrl = () => {
+    return "https://xdai.gateway.request.network/"
+    
+    // const url = storageChains.get(storageChain)?.gateway;
+    // console.log("url", url);
+    // return url;
+    // if (chain.id === 137) return "https://polygon.gateway.request.network/";
+    // if (chain.id === 5) return "https://goerli.gateway.request.network/";
+    // console.log("getBaseUrl");
+    // console.log(chain);
+
+    // //"https://goerli.gateway.request.network/"
+
+    // return "https://xdai.gateway.request.network/";
+  }
+
   // FUNCTIONS
   async function payTheRequest() {
     const requestClient = new RequestNetwork({
       nodeConnectionConfig: {
-        baseURL: storageChains.get(storageChain)?.gateway,
+        baseURL: getBaseUrl(),
+        // baseURL: storageChains.get(storageChain)?.gateway,
       },
     });
+
+    console.log({requestClient})
 
     try {
       const _request = await requestClient.fromRequestId(requestData?.requestId);
       let _requestData = _request.getData();
+      console.log({_requestData})
       const paymentTx = await payRequest(_requestData, signer);
       await paymentTx.wait(2);
 
@@ -148,6 +168,7 @@ export default function Home() {
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
       alert(err);
+      console.log(err);
     }
   }
 
