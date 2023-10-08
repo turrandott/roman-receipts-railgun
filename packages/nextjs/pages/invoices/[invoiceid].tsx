@@ -106,7 +106,8 @@ export default function Home() {
     functionName: "betPayout",
   });
 
-  useContractEvent({
+  // TEST MOCK CONTR.
+  /*useContractEvent({
     address: "0x853e0A7A0906102099eB24c5018c6A68B4C45c5b",
     abi: testabi,
     eventName: "GameResultFulfilled",
@@ -119,9 +120,9 @@ export default function Home() {
         setStatus(APP_STATUS.BET_LOST);
       }
     },
-  });
+  });*/
 
-  /*useContractEvent({
+  useContractEvent({
     address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
     abi: azuroAbi,
     eventName: "GameResultFulfilled",
@@ -134,7 +135,7 @@ export default function Home() {
         setStatus(APP_STATUS.BET_LOST);
       }
     },
-  });*/
+  });
 
   useEffect(() => {
     setLoading(true);
@@ -446,7 +447,7 @@ export default function Home() {
           <div className="flex justify-between">
             <span className="font-medium">Amount:</span>
             <span>
-              {requestData?.expectedAmount ? formatUnits(BigInt(requestData?.expectedAmount as any), 6)  : null} USDT
+              {requestData?.expectedAmount ? formatUnits(BigInt(requestData?.expectedAmount as any), 6) : null} USDT
             </span>
           </div>
           <div className="flex justify-between">
