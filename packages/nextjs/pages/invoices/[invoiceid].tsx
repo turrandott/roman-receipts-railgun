@@ -6,9 +6,9 @@ import { useRouter } from "next/router";
 import { storageChains } from "../../config/storage-chain";
 import USDTabi from "../../generated/USDTabi.json";
 import azuroAbi from "../../generated/azuroDoubleAbi.json";
+import testabi from "../../generated/testabi.json";
 import { useEthersV5Provider } from "../../hooks/ethers/use-ethers-v5-provider";
 import { useEthersV5Signer } from "../../hooks/ethers/use-ethers-v5-signer";
-import { AmazonSquareFilled } from "@ant-design/icons";
 import "@rainbow-me/rainbowkit/styles.css";
 import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
 import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "@requestnetwork/payment-processor";
@@ -72,6 +72,8 @@ export default function Home() {
   const provider = useEthersV5Provider();
   const signer = useEthersV5Signer();
 
+  let payout;
+
   const { write: bet } = useContractWrite({
     address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
     abi: azuroAbi,
@@ -97,11 +99,13 @@ export default function Home() {
   });
 
   useContractEvent({
-    address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
-    abi: azuroAbi,
+    address: "0x853e0A7A0906102099eB24c5018c6A68B4C45c5b",
+    abi: testabi,
     eventName: "GameResultFulfilled",
     listener(log) {
-      console.log(log);
+      payout = log[0]["args"]["_payout"];
+      setFetching(false);
+      setStatus(APP_STATUS.BET_COMPLETED);
     },
   });
 
@@ -289,7 +293,7 @@ export default function Home() {
   async function approve() {
     const requestClient = new RequestNetwork({
       nodeConnectionConfig: {
-        baseURL: storageChains.get(storageChain)!.gateway,
+        baseURL: storageChains.get(storageChain)?.gateway,
       },
     });
 
@@ -336,13 +340,22 @@ export default function Home() {
     }
   }
 
+  function degeneracyButtonManager() : string{
+    if (!approved) {
+      return ("APPROVE DEGENERACY");
+    } else if (approved && !fetching) {
+      return ("DOUBLE OR NOTHING");
+    } else {
+      return ("CALCULATING... PLEASE WAIT");
+    }
+  }
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-4/5 md:w-1/2 mt-12">
         <h3 className="text-center text-xl font-bold mb-4">Invoice</h3>
-        <p className="text-xs break-all">
-          id: {invoiceid}
-        </p>
+        <p className="text-xs break-all">id: {invoiceid}</p>
         <div className="flex justify-between mb-2">
           <span className="font-medium">From:</span>
 
@@ -491,7 +504,7 @@ export default function Home() {
               onClick={approved ? handleDoubleYourIncome : handleApproveBet}
               className={approved ? "btn btn-primary w-full mb-4" : "btn w-full mb-4"}
             >
-              {approved ? "DOUBLE OR NOTHING" : "APPROVE DEGENERACY"}
+              {degeneracyButtonManager()}
             </button>
 
             <div className="my-16">
