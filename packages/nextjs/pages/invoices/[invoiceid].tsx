@@ -428,7 +428,7 @@ export default function Home() {
           <div className="flex justify-between">
             <span className="font-medium">Amount:</span>
             <span>
-              {requestData?.expectedAmount ? formatUnits(BigInt(requestData?.expectedAmount as any), 18) : null}
+              {requestData?.expectedAmount ? formatUnits(BigInt(requestData?.expectedAmount as any), 6) : null}
             </span>
           </div>
           <div className="flex justify-between">
@@ -448,7 +448,7 @@ export default function Home() {
           </div>
         </div>
 
-        {requestData?.payer?.value === address ? (
+        {/* {requestData?.payer?.value === address ? (
           <ul className="list-disc pl-5 mb-4 my-12">
             <li className="mb-2">
               <span>Get FAU on Goerli using the </span>
@@ -463,7 +463,7 @@ export default function Home() {
               </Link>
             </li>
           </ul>
-        ) : null}
+        ) : null} */}
 
         {requestData?.payer?.value === address ? (
           <div className="my-16">
