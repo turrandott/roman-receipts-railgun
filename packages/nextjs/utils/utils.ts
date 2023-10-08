@@ -1,3 +1,5 @@
+import toast from "react-hot-toast";
+
 export const copyToClipboard = (data: string) => {
   const elId = Date.now().toString();
   const el = document.createElement("textarea");
@@ -8,5 +10,5 @@ export const copyToClipboard = (data: string) => {
   document.execCommand("copy");
   document.getElementById(elId).style.display = "none";
   document.getElementById(elId).remove();
-  alert("url copied");
+  toast.success("Invoice URL copied");
 };

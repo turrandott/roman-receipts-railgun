@@ -26,6 +26,7 @@ import {
 } from "wagmi";
 import Url from "./url";
 import Loading from "~~/components/Loading";
+import toast from "react-hot-toast";
 
 const calculateStatus = (state: string, expectedAmount: bigint, balance: bigint) => {
   if (balance >= expectedAmount) {
@@ -171,7 +172,7 @@ export default function Home() {
         alert(`balance = ${_requestData.balance?.balance}`);
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
-      alert(`payment detected!`);
+      toast.success(`Payment detected!`);
       setRequestData(_requestData);
       setStatus(APP_STATUS.REQUEST_PAID);
     } catch (err) {
@@ -307,9 +308,9 @@ export default function Home() {
       if (
         getPaymentNetworkExtension(_requestData)?.id === Types.Extension.PAYMENT_NETWORK_ID.ERC20_FEE_PROXY_CONTRACT
       ) {
-        alert(`ERC20 Request detected. Checking approval...`);
+        toast.success(`ERC20 Request detected. Checking approval...`);
         const _hasErc20Approval = await hasErc20Approval(_requestData, address as string, provider);
-        alert(`_hasErc20Approval = ${_hasErc20Approval}`);
+        toast.success(`_hasErc20Approval = ${_hasErc20Approval}`);
         if (!_hasErc20Approval) {
           const approvalTx = await approveErc20(_requestData, signer);
           await approvalTx.wait(2);
@@ -338,8 +339,8 @@ export default function Home() {
       setStatus(APP_STATUS.PAYING);
       payTheRequest(); // Continue with the payment process
     } else {
-      // Handle the error, for example, by showing an alert or updating the state to show an error message
-      alert("The digits entered do not match. Please try again.");
+      // alert("The digits entered do not match. Please try again.");
+      toast.error("Not implemented yet");
     }
   }
 
@@ -359,7 +360,7 @@ export default function Home() {
 
   function handlePayZk(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    alert("Not implemented yet");
+    toast.error("Not implemented yet");
   }
 
   if (loading) return <Loading />;

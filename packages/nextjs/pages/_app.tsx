@@ -44,7 +44,7 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
           <Header />
           <Component {...pageProps} />
           <Footer />
-          <Toaster />
+          <Toaster position="bottom-center" />
         </main>
       </RainbowKitProvider>
     </WagmiConfig>
