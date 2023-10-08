@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { RequestNetwork, Types } from "@requestnetwork/request-client.js";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import PendingInvoice from "~~/components/PendingInvoice";
-import Link from "next/link";
 
 // EDIT THIS TO SELECT THE USER"S ADDRESS
 
@@ -18,20 +18,18 @@ const Dashboard = () => {
 
   const getRequestsToPay = () => {
     if (!totalRequestHistory) return [];
-    const reqArray =  totalRequestHistory?.filter((request: any) => {
-      return calculateStatus(
-        request.state,
-        BigInt(request.expectedAmount),
-        BigInt(request.balance?.balance || 0)
-      ) !== "Paid" && request?.payer.value === address;
-      }
-    )
+    const reqArray = totalRequestHistory?.filter((request: any) => {
+      return (
+        calculateStatus(request.state, BigInt(request.expectedAmount), BigInt(request.balance?.balance || 0)) !==
+          "Paid" && request?.payer.value === address
+      );
+    });
     if (reqArray.length > 0) {
       return reqArray;
     } else {
       return [];
     }
-  }
+  };
 
   useEffect(() => {
     const requestClient = new RequestNetwork({
@@ -66,21 +64,25 @@ const Dashboard = () => {
   };
 
   //set totalHistory to results
-  //filter results based on request.balance.balance 
+  //filter results based on request.balance.balance
   //if request.balance.balance > 0 => !pendingInvoice
 
   return (
     <div>
       <div className="flex flex-row justify-center p-4">
         <button
-          className={`mr-4 py-2 px-4 border rounded ${activeButton === "pendingInvoices" ? "bg-primary text-white" : "bg-gray-200 text-black"}`}
+          className={`mr-4 py-2 px-4 border rounded ${
+            activeButton === "pendingInvoices" ? "bg-primary text-white" : "bg-gray-200 text-black"
+          }`}
           onClick={() => setActiveButton("pendingInvoices")}
         >
           Pending Invoices
         </button>
 
         <button
-          className={`py-2 px-4 border rounded ${activeButton === "transactionHistory" ? "bg-primary text-white" : "bg-gray-200 text-black"}`}
+          className={`py-2 px-4 border rounded ${
+            activeButton === "transactionHistory" ? "bg-primary text-white" : "bg-gray-200 text-black"
+          }`}
           onClick={() => setActiveButton("transactionHistory")}
         >
           Transaction History
@@ -106,23 +108,24 @@ const Dashboard = () => {
               <tbody>
                 {totalRequestHistory
                   ?.filter((request: any) => {
-                    return calculateStatus(
-                      request.state,
-                      BigInt(request.expectedAmount),
-                      BigInt(request.balance?.balance || 0)
-                    ) === "Paid";
+                    return (
+                      calculateStatus(
+                        request.state,
+                        BigInt(request.expectedAmount),
+                        BigInt(request.balance?.balance || 0),
+                      ) === "Paid"
+                    );
                   })
                   .map((request: any) => (
                     <tr key={request.timestamp}>
                       <td>{request.timestamp}</td>
-                      <td >
-                      <button
-                      className="btn"
-                        ><Link href={`/invoices/${request.requestId}`}>
-                        {request.requestId.slice(0, 4)}...
-                        {request.requestId.slice(62, 66)}
-                      </Link></button>
-                        
+                      <td>
+                        <button className="btn">
+                          <Link href={`/invoices/${request.requestId}`}>
+                            {request.requestId.slice(0, 4)}...
+                            {request.requestId.slice(62, 66)}
+                          </Link>
+                        </button>
                       </td>
                       <td>
                         {request.payer?.value.slice(0, 5)}...
@@ -136,7 +139,7 @@ const Dashboard = () => {
                         {calculateStatus(
                           request.state,
                           BigInt(request.expectedAmount),
-                          BigInt(request.balance?.balance || 0)
+                          BigInt(request.balance?.balance || 0),
                         )}
                       </td>
                       <td>{formatUnits(BigInt(request.balance?.balance || 0), 6)}</td>
@@ -156,7 +159,6 @@ const Dashboard = () => {
               <h2 className="text-xl font-bold mb-4 text-center">To pay</h2>
               {/* <div className="grid grid-cols-1 gap-4"> */}
               <div className="flex flex-row flex-center justify-center flex-wrap">
-
                 {getRequestsToPay().map((request: any) => (
                   <PendingInvoice request={request} key={request.timestamp} />
                 ))}
@@ -169,11 +171,13 @@ const Dashboard = () => {
               <div className="flex flex-row flex-center justify-center flex-wrap">
                 {totalRequestHistory
                   ?.filter((request: any) => {
-                    return calculateStatus(
-                      request.state,
-                      BigInt(request.expectedAmount),
-                      BigInt(request.balance?.balance || 0)
-                    ) !== "Paid" && request?.payer.value !== address;
+                    return (
+                      calculateStatus(
+                        request.state,
+                        BigInt(request.expectedAmount),
+                        BigInt(request.balance?.balance || 0),
+                      ) !== "Paid" && request?.payer.value !== address
+                    );
                   })
                   .map((request: any) => (
                     <PendingInvoice request={request} key={request.timestamp} />
@@ -185,6 +189,6 @@ const Dashboard = () => {
       )}
     </div>
   );
-}
+};
 
 export default Dashboard;

@@ -16,6 +16,7 @@ import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "
 import { RequestNetwork, Types, Utils } from "@requestnetwork/request-client.js";
 import toast from "react-hot-toast";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
+import { textResolverAbi } from "viem/dist/types/constants/abis";
 import {
   useAccount,
   useContractEvent,
@@ -106,6 +107,21 @@ export default function Home() {
   });
 
   useContractEvent({
+    address: "0x853e0A7A0906102099eB24c5018c6A68B4C45c5b",
+    abi: testabi,
+    eventName: "GameResultFulfilled",
+    listener(log) {
+      payout = parseInt(log[0]["args"]["_payout"], 10);
+      setFetching(false);
+      if (payout > 0) {
+        setStatus(APP_STATUS.BET_WON);
+      } else {
+        setStatus(APP_STATUS.BET_LOST);
+      }
+    },
+  });
+
+  /*useContractEvent({
     address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
     abi: azuroAbi,
     eventName: "GameResultFulfilled",
@@ -118,7 +134,7 @@ export default function Home() {
         setStatus(APP_STATUS.BET_LOST);
       }
     },
-  });
+  });*/
 
   useEffect(() => {
     setLoading(true);
@@ -354,11 +370,11 @@ export default function Home() {
 
   function degeneracyButtonTextManager(): string {
     if (status === APP_STATUS.PAYOUT_WITHDRAWN) {
-      return "WITHDRAW CONFIRMED: BUY YOURSELF A GELATO";
+      return "WITHDRAW CONFIRMING: BUY YOURSELF A GELATO";
     } else if (status === APP_STATUS.BET_LOST) {
       return "YOU LOST: SAY GOODBYE TO YOUR MONEY...";
     } else if (status === APP_STATUS.BET_WON) {
-      return "YOU WON: YOUR CHILDREN WON'T STARVE THIS TIME!";
+      return "YOU WON: CLICK HERE TO CLAIM THE PRIZE!";
     } else if (status === APP_STATUS.BET_PLACED) {
       return "CALCULATING... PLEASE WAIT";
     } else if (status === APP_STATUS.DEGENERACY_APPROVED) {
