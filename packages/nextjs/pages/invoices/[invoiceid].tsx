@@ -192,7 +192,7 @@ export default function Home() {
     try {
       const amount = _requestData.expectedAmount;
       //@ts-ignore
-      approveUSDT({ args: ["0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4", amount.slice(0, -1)] });
+      approveUSDT({ args: ["0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4", amount] });
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
       alert(err);
@@ -216,7 +216,7 @@ export default function Home() {
     try {
       const amount = _requestData.expectedAmount;
       //@ts-ignore
-      bet({ args: [amount.slice(0, -12)] });
+      bet({ args: [amount] });
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
       alert(err);
