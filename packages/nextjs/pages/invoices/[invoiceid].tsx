@@ -24,6 +24,7 @@ import {
   useSwitchNetwork,
   useWalletClient,
 } from "wagmi";
+import Url from "./url";
 
 const calculateStatus = (state: string, expectedAmount: bigint, balance: bigint) => {
   if (balance >= expectedAmount) {
@@ -77,6 +78,7 @@ export default function Home() {
   const signer = useEthersV5Signer();
 
   let payout: number;
+  console.log(router)
 
   const { write: bet } = useContractWrite({
     address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
@@ -518,9 +520,10 @@ export default function Home() {
 
             <div className="my-16">
               <h4 className="text-lg font-semibold my-4 text-center">Request info</h4>
-              <p className="mb-2">App status: {status}</p>
-              <p className="mb-4">Request state: {requestData?.state}</p>
+              <p className="mb-1">App status: {status}</p>
+              <p className="mb-2">Request state: {requestData?.state}</p>
             </div>
+            <Url />
           </div>
         ) : null}
       </div>
