@@ -14,6 +14,7 @@ import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
 import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "@requestnetwork/payment-processor";
 import { RequestNetwork, Types, Utils } from "@requestnetwork/request-client.js";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
+import { getTxpoolStatus } from "viem/dist/types/actions/test/getTxpoolStatus";
 import {
   useAccount,
   useContractEvent,
@@ -52,7 +53,8 @@ enum APP_STATUS {
   PAYMENT_ACCEPTED = "payment accepted",
   DEGENERACY_APPROVED = "degeneracy approved",
   BET_PLACED = "bet placed",
-  BET_COMPLETED = "bet completed",
+  BET_WON = "double won",
+  BET_LOST = "double lost",
   ERROR_OCCURRED = "error occurred",
 }
 
@@ -60,6 +62,8 @@ export default function Home() {
   const [storageChain, setStorageChain] = useState("100");
   const [approved, setApproved] = useState(false);
   const [fetching, setFetching] = useState(false);
+  const [won, setwon] = useState(false);
+  const [lost, setlost] = useState(false);
   const [confirmationDigits, setConfirmationDigits] = useState("");
   const router = useRouter();
   const { invoiceid } = router.query;
@@ -72,7 +76,7 @@ export default function Home() {
   const provider = useEthersV5Provider();
   const signer = useEthersV5Signer();
 
-  let payout;
+  let payout: number;
 
   const { write: bet } = useContractWrite({
     address: "0x40FE3b7d707D8243E7800Db704A55d7AAbe3B2d4",
@@ -103,9 +107,13 @@ export default function Home() {
     abi: testabi,
     eventName: "GameResultFulfilled",
     listener(log) {
-      payout = log[0]["args"]["_payout"];
+      payout = parseInt(log[0]["args"]["_payout"].slice(0, -1), 10);
       setFetching(false);
-      setStatus(APP_STATUS.BET_COMPLETED);
+      if (payout > 0) {
+        setStatus(APP_STATUS.BET_WON);
+      } else {
+        setStatus(APP_STATUS.BET_LOST);
+      }
     },
   });
 
@@ -194,8 +202,6 @@ export default function Home() {
       const amount = _requestData.expectedAmount;
       //@ts-ignore
       bet({ args: [amount.slice(0, -12)] });
-
-      alert(`bet placed!`);
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
       alert(err);
@@ -277,7 +283,7 @@ export default function Home() {
     });
 
     try {
-      const _request = await requestClient.fromRequestId(requestData!.requestId);
+      const _request = await requestClient.fromRequestId(requestData?.requestId);
       const _requestData = _request.getData();
 
       if (
@@ -319,15 +325,18 @@ export default function Home() {
     }
   }
 
-  function degeneracyButtonManager() : string{
+  function degeneracyButtonManager(): string {
     if (!approved) {
-      return ("APPROVE DEGENERACY");
-    } else if (approved && !fetching) {
-      return ("DOUBLE OR NOTHING");
-    } else {
-      return ("CALCULATING... PLEASE WAIT");
+      return "APPROVE DEGENERACY";
+    } else if (!fetching) {
+      return "DOUBLE OR NOTHING";
+    } else if (status === APP_STATUS.BET_PLACED && fetching) {
+      return "CALCULATING... PLEASE WAIT";
+    } else if (status === APP_STATUS.BET_WON) {
+      return "YOUR CHILDREN WON'T STARVE THIS TIME!";
+    } else if (status === APP_STATUS.BET_LOST) {
+      return "SAY GOODBYE TO YOUR WIFE...";
     }
-  }
   }
 
   return (
