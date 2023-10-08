@@ -14,7 +14,6 @@ import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
 import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "@requestnetwork/payment-processor";
 import { RequestNetwork, Types, Utils } from "@requestnetwork/request-client.js";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
-import { getTxpoolStatus } from "viem/dist/types/actions/test/getTxpoolStatus";
 import {
   useAccount,
   useContractEvent,
@@ -62,13 +61,10 @@ export default function Home() {
   const [storageChain, setStorageChain] = useState("100");
   const [approved, setApproved] = useState(false);
   const [fetching, setFetching] = useState(false);
-  const [won, setwon] = useState(false);
-  const [lost, setlost] = useState(false);
   const [confirmationDigits, setConfirmationDigits] = useState("");
   const router = useRouter();
   const { invoiceid } = router.query;
   const [status, setStatus] = useState(APP_STATUS.AWAITING_INPUT);
-  const { data: walletClient } = useWalletClient();
   const { address } = useAccount();
   const { chain } = useNetwork();
   const { chains, error, isLoading: isSwitchNetworkLoading, switchNetwork } = useSwitchNetwork();
@@ -107,7 +103,7 @@ export default function Home() {
     abi: testabi,
     eventName: "GameResultFulfilled",
     listener(log) {
-      payout = parseInt(log[0]["args"]["_payout"].slice(0, -1), 10);
+      payout = parseInt(log[0]["args"]["_payout"], 10);
       setFetching(false);
       if (payout > 0) {
         setStatus(APP_STATUS.BET_WON);
@@ -134,8 +130,8 @@ export default function Home() {
   }, [address, invoiceid]);
 
   const getBaseUrl = () => {
-    return "https://xdai.gateway.request.network/"
-    
+    return "https://xdai.gateway.request.network/";
+
     // const url = storageChains.get(storageChain)?.gateway;
     // console.log("url", url);
     // return url;
@@ -147,7 +143,7 @@ export default function Home() {
     // //"https://goerli.gateway.request.network/"
 
     // return "https://xdai.gateway.request.network/";
-  }
+  };
 
   // FUNCTIONS
   async function payTheRequest() {
@@ -158,12 +154,12 @@ export default function Home() {
       },
     });
 
-    console.log({requestClient})
+    console.log({ requestClient });
 
     try {
       const _request = await requestClient.fromRequestId(requestData?.requestId);
       let _requestData = _request.getData();
-      console.log({_requestData})
+      console.log({ _requestData });
       const paymentTx = await payRequest(_requestData, signer);
       await paymentTx.wait(2);
 
@@ -202,10 +198,9 @@ export default function Home() {
       setStatus(APP_STATUS.ERROR_OCCURRED);
       alert(err);
     }
-
-    setStatus(APP_STATUS.DEGENERACY_APPROVED);
     setTimeout(() => {
       setApproved(true);
+      setStatus(APP_STATUS.DEGENERACY_APPROVED);
     }, 10000);
   }
 
@@ -284,15 +279,11 @@ export default function Home() {
 
   function handleApproveBet(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-
-    setStatus(APP_STATUS.PAYING);
     approveBet();
   }
 
   function handleDoubleYourIncome(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-
-    setStatus(APP_STATUS.PAYING);
     doubleYourIncome();
   }
 
@@ -346,17 +337,35 @@ export default function Home() {
     }
   }
 
-  function degeneracyButtonManager(): string {
-    if (!approved) {
-      return "APPROVE DEGENERACY";
-    } else if (!fetching) {
-      return "DOUBLE OR NOTHING";
-    } else if (status === APP_STATUS.BET_PLACED && fetching) {
-      return "CALCULATING... PLEASE WAIT";
+  function degeneracyButtonTextManager(): string {
+    if (status === APP_STATUS.BET_LOST) {
+      return "SAY GOODBYE TO YOUR WIFE...";
     } else if (status === APP_STATUS.BET_WON) {
       return "YOUR CHILDREN WON'T STARVE THIS TIME!";
-    } else if (status === APP_STATUS.BET_LOST) {
-      return "SAY GOODBYE TO YOUR WIFE...";
+    } else if (status === APP_STATUS.BET_PLACED) {
+      return "CALCULATING... PLEASE WAIT";
+    } else if (status === APP_STATUS.DEGENERACY_APPROVED) {
+      return "DOUBLE OR NOTHING";
+    } else if (!approved) {
+      return "APPROVE DEGENERACY";
+    }
+  }
+
+  function disableDegenButton(): boolean {
+    if (status === APP_STATUS.BET_PLACED) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  function degeneracyButtonManager(e: any): any {
+    if (!approved) {
+      return handleApproveBet(e);
+    } else if (!fetching && status === APP_STATUS.DEGENERACY_APPROVED) {
+      return handleDoubleYourIncome(e);
+    } else {
+      return null;
     }
   }
 
@@ -510,10 +519,11 @@ export default function Home() {
 
             <button
               type="button"
-              onClick={approved ? handleDoubleYourIncome : handleApproveBet}
+              onClick={e => degeneracyButtonManager(e)}
               className={approved ? "btn btn-primary w-full mb-4" : "btn w-full mb-4"}
+              disabled={disableDegenButton()}
             >
-              {degeneracyButtonManager()}
+              {degeneracyButtonTextManager()}
             </button>
 
             <div className="my-16">
