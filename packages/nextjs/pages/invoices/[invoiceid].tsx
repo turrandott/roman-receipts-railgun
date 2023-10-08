@@ -14,6 +14,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
 import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "@requestnetwork/payment-processor";
 import { RequestNetwork, Types, Utils } from "@requestnetwork/request-client.js";
+import toast from "react-hot-toast";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
 import {
   useAccount,
@@ -25,7 +26,6 @@ import {
   useWalletClient,
 } from "wagmi";
 import Loading from "~~/components/Loading";
-import toast from "react-hot-toast";
 
 const calculateStatus = (state: string, expectedAmount: bigint, balance: bigint) => {
   if (balance >= expectedAmount) {
@@ -135,9 +135,10 @@ export default function Home() {
         setRequestData(_requestData);
         setZkAddress(_requestData.contentData.zkAddressRecipient ?? null);
         // console.log(request.getData());
-    }).finally(()=> {
-      setLoading(false)
-    });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [address, invoiceid]);
 
   const getBaseUrl = () => {
@@ -343,6 +344,7 @@ export default function Home() {
     } catch (err) {
       setStatus(APP_STATUS.ERROR_OCCURRED);
       alert(err);
+    }
   }
 
   function handleWidthdrawPayout(e: React.MouseEvent<HTMLButtonElement>) {
@@ -350,13 +352,10 @@ export default function Home() {
     withdrawPayout();
   }
 
-
-
   function degeneracyButtonTextManager(): string {
-    if (status === APP_STATUS.PAYOUT_WITHDRAWN){
+    if (status === APP_STATUS.PAYOUT_WITHDRAWN) {
       return "BUY YOURSELF A GELATO";
-    }
-    else if (status === APP_STATUS.BET_LOST) {
+    } else if (status === APP_STATUS.BET_LOST) {
       return "SAY GOODBYE TO YOUR WIFE...";
     } else if (status === APP_STATUS.BET_WON) {
       return "YOUR CHILDREN WON'T STARVE THIS TIME!";
