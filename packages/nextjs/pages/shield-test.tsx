@@ -1,36 +1,43 @@
 /* eslint-disable prettier/prettier */
 "use client";
 
-import { getConfigForApprove, getErc20ShieldingTx, getShieldSignatureMessage } from "~~/utils/railgun/token-shielder";
-import keccak256 from "keccak256";
-import { writeContract, signMessage, erc20ABI, useSigner } from '@wagmi/core';
-import { useAccount, useNetwork } from "wagmi";
-import { getWalletClient } from "@wagmi/core";
+import { getApproveContractConfig, getErc20ShieldingTx, getShieldSignatureMessage } from "~~/utils/railgun/token-shielder";
+import { useAccount, useContractWrite, useNetwork, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
+import { signMessage } from '@wagmi/core';
+import { prepareWriteContract, writeContract, prepareSendTransaction, sendTransaction } from '@wagmi/core';
+import launchWallet from "~~/utils/railgun/wallet-engine";
+
+import { keccak256 } from 'ethers';
 
 export default function Home() {
-
   const { address } = useAccount();
   const { chain } = useNetwork();
+  // const { config: configApprove } = usePrepareContractWrite(getApproveContractConfig(request, chain))
+  // const { data: dataApprove, write: writeApprove } = useContractWrite(configApprove)
+  // const { isLoading: isLoadingApprove, isSuccess: isSuccessApprove } = useWaitForTransaction({
+  //   hash: dataApprove?.hash,
+  // })
 
   async function payTheRequestZk() {
-    // const configApprove = await getConfigForApprove(request, chain);
-    // const { hash: approveHash } = await writeContract(configApprove);
-    // console.log("approveHash", approveHash);
+    await launchWallet();
+
+    const { request } = await prepareWriteContract(getApproveContractConfig(RNrequest, chain));
+    const { hash: approveHash } = await writeContract(request);
+    console.log("hash approve", approveHash);
 
     const shieldSignatureMessage: string = getShieldSignatureMessage();
     const signature = await signMessage({
       message: shieldSignatureMessage,
     });
     const shieldPrivateKey = keccak256(signature).toString();
-    console.log({ shieldPrivateKey });
 
-    const walletClient = await getWalletClient();
+    const shieldingTX = await getErc20ShieldingTx(shieldPrivateKey, chain, RNrequest, address);
+    console.log("tx", shieldingTX);
 
-    const shieldingTX = getErc20ShieldingTx(shieldPrivateKey, chain, request, address);
+    // const configShieldTx = await prepareSendTransaction(shieldingTX);
 
-    const shieldHash = await walletClient.sendTransaction(shieldingTX);
-
-    console.log("shieldHash", shieldHash);
+    const { hash: shieldHash } = await sendTransaction(shieldingTX)
+    console.log("hash shield", shieldHash);
   }
 
   function handlePay(e: React.MouseEvent<HTMLButtonElement>) {
@@ -45,7 +52,7 @@ export default function Home() {
   );
 }
 
-const request = {
+const RNrequest = {
     "_events": {},
     "_eventsCount": 0,
     "currency": "FAU-goerli",

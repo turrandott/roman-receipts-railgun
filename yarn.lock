@@ -4718,6 +4718,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@railgun-community/engine@npm:5.2.7":
+  version: 5.2.7
+  resolution: "@railgun-community/engine@npm:5.2.7"
+  dependencies:
+    "@noble/ed25519": ^1.7.1
+    "@noble/hashes": ^1.3.0
+    "@railgun-community/curve25519-scalarmult-wasm": 0.1.5
+    "@scure/base": ^1.1.1
+    abstract-leveldown: ^7.2.0
+    bn.js: ^5.2.1
+    browserify-aes: ^1.2.0
+    buffer-xor: ^2.0.2
+    chai-as-promised: ^7.1.1
+    circomlibjs: "hsg88/circomlibjs#ffjavascrip.0.1.0"
+    encoding-down: ^7.1.0
+    ethereum-cryptography: ^2.0.0
+    ethers: "github:Railgun-Community/ethers.js#v6.7.6"
+    fast-text-encoding: ^1.0.6
+    levelup: ^5.1.1
+    msgpack-lite: ^0.1.26
+  checksum: cf3e0dfb9bb652f6b035e35b6a3f28b25b0dbe72fd3ee9e66ba3f7e6ce73cb247a36805bef1d5db925ad710f8a43b42edcf7db6fa63bbc42e2d0b8207e06950f
+  languageName: node
+  linkType: hard
+
 "@railgun-community/engine@npm:5.7.22":
   version: 5.7.22
   resolution: "@railgun-community/engine@npm:5.7.22"
@@ -4743,12 +4767,52 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@railgun-community/shared-models@npm:5.3.6":
+  version: 5.3.6
+  resolution: "@railgun-community/shared-models@npm:5.3.6"
+  peerDependencies:
+    ethers: "*"
+  checksum: 621c1d842dee611ce416d3954628c15f4b0a41765735bc8cda54f9564e16a5468ec8d98289ea3caf3923bf5d544653cd3b1f6d2b7e37302ef5a4d4df6a6a5409
+  languageName: node
+  linkType: hard
+
 "@railgun-community/shared-models@npm:5.6.5, @railgun-community/shared-models@npm:^5.6.5":
   version: 5.6.5
   resolution: "@railgun-community/shared-models@npm:5.6.5"
   peerDependencies:
     ethers: "*"
   checksum: 9cb6de891279ac66e112e509430fb7cdc49eca5767518039ebf876c75a6ffad32bd1506e5ef729c169ff7c7d8677294cc5e73e032fef2276e1f6d5141a50ebe1
+  languageName: node
+  linkType: hard
+
+"@railgun-community/wallet@npm:5.5.8":
+  version: 5.5.8
+  resolution: "@railgun-community/wallet@npm:5.5.8"
+  dependencies:
+    "@graphql-mesh/cache-localforage": ^0.7.20
+    "@graphql-mesh/cross-helpers": ^0.3.4
+    "@graphql-mesh/graphql": ^0.34.16
+    "@graphql-mesh/http": ^0.3.28
+    "@graphql-mesh/merger-stitching": ^0.18.24
+    "@graphql-mesh/runtime": ^0.46.23
+    "@graphql-mesh/store": ^0.9.20
+    "@graphql-mesh/types": ^0.91.14
+    "@graphql-mesh/utils": ^0.43.22
+    "@noble/ed25519": ^1.7.1
+    "@railgun-community/engine": 5.2.7
+    "@railgun-community/shared-models": 5.3.6
+    "@whatwg-node/fetch": ^0.8.4
+    assert: 2.0.0
+    axios: 0.27.2
+    brotli: ^1.3.3
+    buffer: ^6.0.3
+    crypto-browserify: 3.12.0
+    ethereum-cryptography: ^2.0.0
+    ethers: "github:Railgun-Community/ethers.js#v6.7.6"
+    events: 3.3.0
+    graphql: ^16.6.0
+    stream-browserify: 3.0.0
+  checksum: 49dde0fb17d5ca5ae7487ed8c1bce3350174d56c3ff694c853a4cd3d500afd99818ff054a79f803376a13610c4fe908eb5ef71006f7ea0fb906a5db4509e130f
   languageName: node
   linkType: hard
 
@@ -5335,6 +5399,8 @@ __metadata:
     "@ant-design/icons": ^5.2.6
     "@ethersproject/providers": ~5.7.2
     "@heroicons/react": ~2.0.11
+    "@railgun-community/shared-models": 5.3.6
+    "@railgun-community/wallet": 5.5.8
     "@rainbow-me/rainbowkit": 1.0.8
     "@requestnetwork/advanced-logic": ^0.36.0
     "@requestnetwork/payment-processor": ^0.38.1-next.1930
@@ -5355,6 +5421,8 @@ __metadata:
     eslint-config-next: ~13.1.6
     eslint-config-prettier: ~8.5.0
     eslint-plugin-prettier: ~4.2.1
+    ethers: "github:Railgun-Community/ethers.js#v6.7.6"
+    level-js: ^6.1.0
     next: ~13.1.6
     nextjs-progressbar: ~0.0.16
     postcss: ~8.4.16
@@ -10665,7 +10733,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:^16.0.0":
+"dotenv@npm:^16.0.0, dotenv@npm:^16.3.1":
   version: 16.3.1
   resolution: "dotenv@npm:16.3.1"
   checksum: 15d75e7279018f4bafd0ee9706593dd14455ddb71b3bcba9c52574460b7ccaf67d5cf8b2c08a5af1a9da6db36c956a04a1192b101ee102a3e0cf8817bbcf3dfd
@@ -15516,6 +15584,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"level-js@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "level-js@npm:6.1.0"
+  dependencies:
+    abstract-leveldown: ^7.2.0
+    buffer: ^6.0.3
+    inherits: ^2.0.3
+    ltgt: ^2.1.2
+    run-parallel-limit: ^1.1.0
+  checksum: e858e34e5c3c86a250e7d00d79c08008c951e1913a3ee47d18db8d34f54395419137eb8457b2878073cb05af38240d2e8a496934ead1f0004a5b35709d6af120
+  languageName: node
+  linkType: hard
+
 "level-supports@npm:^2.0.1":
   version: 2.1.0
   resolution: "level-supports@npm:2.1.0"
@@ -15908,6 +15989,13 @@ __metadata:
   version: 0.3.3
   resolution: "lru_map@npm:0.3.3"
   checksum: ca9dd43c65ed7a4f117c548028101c5b6855e10923ea9d1f635af53ad20c5868ff428c364d454a7b57fe391b89c704982275410c3c5099cca5aeee00d76e169a
+  languageName: node
+  linkType: hard
+
+"ltgt@npm:^2.1.2":
+  version: 2.2.1
+  resolution: "ltgt@npm:2.2.1"
+  checksum: 7e3874296f7538bc8087b428ac4208008d7b76916354b34a08818ca7c83958c1df10ec427eeeaad895f6b81e41e24745b18d30f89abcc21d228b94f6961d50a2
   languageName: node
   linkType: hard
 
@@ -19918,6 +20006,7 @@ __metadata:
   dependencies:
     "@railgun-community/shared-models": ^5.6.5
     "@railgun-community/wallet": ^5.10.15
+    dotenv: ^16.3.1
     ethers: "github:Railgun-Community/ethers.js#v6.7.6"
     husky: ~8.0.3
     keccak256: ^1.0.6

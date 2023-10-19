@@ -1,21 +1,75 @@
 import { NetworkName, RailgunERC20AmountRecipient } from "@railgun-community/shared-models";
 import { EVMGasType, TransactionGasDetails, getEVMGasTypeForTransaction } from "@railgun-community/shared-models";
-import { gasEstimateForShield, getShieldPrivateKeySignatureMessage, populateShield } from "@railgun-community/wallet";
-import { prepareWriteContract, erc20ABI } from "@wagmi/core";
+import {
+  gasEstimateForShield,
+  getRailgunSmartWalletContractForNetwork,
+  getShieldPrivateKeySignatureMessage,
+  populateShield,
+} from "@railgun-community/wallet";
+import { erc20ABI } from "@wagmi/core";
+
+// hardcoded variables!
+
+export const getApproveContractConfig = (request: any, chain: any) => {
+  const network = getNetworkName(chain);
+  const raulgunSmartWalletContract = getRailgunSmartWalletContractForNetwork(network).address as `0x{string}`;
+  // console.log("raulgunSmartWalletContract", raulgunSmartWalletContract);
+  const contractConfig = {
+    address: "0x65a5ba240CBd7fD75700836b683ba95EBb2F32bd", // DAI test // request.currencyInfo.value,
+    abi: erc20ABI,
+    functionName: "approve",
+    args: [raulgunSmartWalletContract, BigInt("10")],
+  };
+
+  return contractConfig;
+};
 
 export const getShieldSignatureMessage: () => string = () => {
   return getShieldPrivateKeySignatureMessage();
 };
 
-//   const shieldPrivateKey = keccak256(
-//     await wallet.signMessage(shieldSignatureMessage),
-//   );
+// tx to send
+export const getErc20ShieldingTx = async (shieldPrivateKey: string, network: any, request: any, from: any) => {
+  const erc20AmountRecipients: RailgunERC20AmountRecipient[] = [
+    {
+      tokenAddress: "0x65a5ba240CBd7fD75700836b683ba95EBb2F32bd", // request.currencyInfo.value,
+      // amount: BigInt(request.expectedAmount),
+      amount: BigInt("10"),
+      // amount: request.hexAmount, // ethers.utils.parseUnits(request.expectedAmount, tokenDecimals).toHexString(), // must be hex request.expectedAmount), // hexadecimal amount
+      // recipientAddress: request.zkAddress, // RAILGUN address
+      recipientAddress:
+        "0zk1qypm86dh0862j9h7z2d5wltdxwrd2pqfg48wrle9rdnzyfzdc9u9lrv7j6fe3z53luqmhmf4muuupxvedcwfmxw034wqqq48uq623s450mx5ajxlz0wkgfugpn5",
+    },
+  ];
+
+  const { gasEstimate } = await gasEstimateForShield(
+    getNetworkName(network),
+    shieldPrivateKey,
+    erc20AmountRecipients,
+    [], // nftAmountRecipients
+    from,
+  );
+
+  console.log(gasEstimate);
+
+  const gasDetails = getGasDetails(network, gasEstimate);
+
+  const { transaction } = await populateShield(
+    getNetworkName(network),
+    shieldPrivateKey,
+    erc20AmountRecipients,
+    [], // nftAmountRecipients
+    gasDetails,
+  );
+
+  return transaction;
+};
 
 const getGasDetails: (network: any, gasEstimate: bigint) => TransactionGasDetails = (
   network: any,
   gasEstimate: bigint,
 ) => {
-  const evmGasType = getEVMGasTypeForTransaction(network.name, true);
+  const evmGasType = getEVMGasTypeForTransaction(getNetworkName(network), true);
 
   // Proper calculation of gas Max Fee and gas Max Priority Fee is not covered in this guide. See: https://docs.alchemy.com/docs/how-to-build-a-gas-fee-estimator-using-eip-1559
   const maxFeePerGas = BigInt("0x100000");
@@ -45,94 +99,11 @@ const getGasDetails: (network: any, gasEstimate: bigint) => TransactionGasDetail
   }
 };
 
-// tx to send
-export const getErc20ShieldingTx = async (shieldPrivateKey: string, network: any, request: any, from: any) => {
-  const erc20AmountRecipients: RailgunERC20AmountRecipient[] = [
-    {
-      tokenAddress: request.currencyInfo.value,
-      amount: BigInt(request.expectedAmount),
-      // amount: request.hexAmount, // ethers.utils.parseUnits(request.expectedAmount, tokenDecimals).toHexString(), // must be hex request.expectedAmount), // hexadecimal amount
-      recipientAddress: request.zkAddress, // RAILGUN address
-    },
-  ];
-
-  const { gasEstimate } = await gasEstimateForShield(
-    getNetworkName(network),
-    shieldPrivateKey,
-    erc20AmountRecipients,
-    [], // nftAmountRecipients
-    from,
-  );
-
-  const gasDetails = getGasDetails(network, gasEstimate);
-
-  const { transaction } = await populateShield(network.name, shieldPrivateKey, erc20AmountRecipients, [], gasDetails);
-
-  return transaction;
-};
-
-export const getConfigForApprove = async (request: any, network: any) => {
-  console.log(network, request);
-  const config = await prepareWriteContract({
-    address: request.currencyInfo.value,
-    abi: erc20ABI,
-    functionName: "approve",
-    args: [getRailgunSmartWalletContract(network), BigInt(request.expectedAmount)],
-  });
-
-  return config;
-};
-
-const getRailgunSmartWalletContract = (chain: any) => {
-  if (chain.network === "goerli") {
-    return "0x14a57CA7C5c1AD54fB6c642f428d973fcD696ED4";
-  } else if (chain.network === "polygon") {
-    return "0x19B620929f97b7b990801496c3b361CA5dEf8C71";
-  }
-};
-
 const getNetworkName = (chain: any) => {
+  // return NetworkName.Ethereum;
   if (chain.network === "goerli") {
     return NetworkName.EthereumGoerli;
   } else if (chain.network === "polygon") {
     return NetworkName.Polygon;
   }
 };
-
-// const getRailgunNetwork = (chain: any) => {
-//   if (chain.network === "goerli") {
-//     return {
-//       blockExplorerUrl: "https://goerli.etherscan.io/",
-//       railgunNetworkName: NetworkName.EthereumGoerli,
-//       chainId: 5,
-//       // wethAddress: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
-//       evmGasType: EVMGasType.Type2,
-//       baseToken: {
-//         symbol: 'ETH',
-//         name: 'ETH',
-//         logoURI: '',
-//       },
-//       fallbackProviders: {
-//         chainId: 5,
-//         providers: [{ provider: "https://goerli.infura.io/v3/", priority: 1, weight: 1 }],
-//       },
-//     };
-//   } else if (chain.network === "polygon") {
-//     return {
-//       blockExplorerUrl: 'https://polygonscan.com/',
-//       railgunNetworkName: NetworkName.Polygon,
-//       chainId: 5,
-//       wethAddress: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
-//       evmGasType: EVMGasType.Type2,
-//       baseToken: {
-//         symbol: 'MATIC',
-//         name: 'MATIC',
-//         logoURI: '',
-//       },
-//       fallbackProviders: {
-//         chainId: 5,
-//         providers: [{ provider: "https://goerli.infura.io/v3/", priority: 1, weight: 1 }],
-//       },
-//     };
-//   }
-// };
