@@ -19,23 +19,28 @@ export default function Home() {
   // })
 
   async function payTheRequestZk() {
+    // start engine
     await launchWallet();
 
+    // ERC20 approve for railgunSmartWalletContract
     const { request } = await prepareWriteContract(getApproveContractConfig(RNrequest, chain));
     const { hash: approveHash } = await writeContract(request);
     console.log("hash approve", approveHash);
 
+    // start shielding
     const shieldSignatureMessage: string = getShieldSignatureMessage();
     const signature = await signMessage({
       message: shieldSignatureMessage,
     });
     const shieldPrivateKey = keccak256(signature).toString();
 
+    // get tx for shielding
     const shieldingTX = await getErc20ShieldingTx(shieldPrivateKey, chain, RNrequest, address);
     console.log("tx", shieldingTX);
 
     // const configShieldTx = await prepareSendTransaction(shieldingTX);
 
+    // send tx with our wallet (via Wagmi in this case)
     const { hash: shieldHash } = await sendTransaction(shieldingTX)
     console.log("hash shield", shieldHash);
   }

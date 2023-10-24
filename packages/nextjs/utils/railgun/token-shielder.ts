@@ -12,13 +12,13 @@ import { erc20ABI } from "@wagmi/core";
 
 export const getApproveContractConfig = (request: any, chain: any) => {
   const network = getNetworkName(chain);
-  const raulgunSmartWalletContract = getRailgunSmartWalletContractForNetwork(network).address as `0x{string}`;
+  const railgunSmartWalletContract = getRailgunSmartWalletContractForNetwork(network).address as `0x{string}`;
   // console.log("raulgunSmartWalletContract", raulgunSmartWalletContract);
   const contractConfig = {
     address: "0x65a5ba240CBd7fD75700836b683ba95EBb2F32bd", // DAI test // request.currencyInfo.value,
     abi: erc20ABI,
     functionName: "approve",
-    args: [raulgunSmartWalletContract, BigInt("10")],
+    args: [railgunSmartWalletContract, BigInt("10")],
   };
 
   return contractConfig;
