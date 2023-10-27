@@ -29,7 +29,7 @@ export default function Home() {
     const goerliUSDTaddress = "0xC2C527C0CACF457746Bd31B2a698Fe89de2b6d49";
 
     // Creating the recipe
-    const recipe = new BasicERC20ApproveRecipe("0xdAB8E0476C2Bfb5aA99579CF2f7d13b60295eaFa"); // Need to add the Request contract
+    const recipe = new BasicERC20ApproveRecipe("0x..."); // Need to add the Request contract
 
     // Creating the recipe input
     const recipeInput: RecipeInput = {
