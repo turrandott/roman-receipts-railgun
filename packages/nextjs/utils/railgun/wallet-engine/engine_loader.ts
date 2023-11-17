@@ -2,7 +2,8 @@
 import { createArtifactStore } from "./create-artifact-store";
 import { setRailgunFees } from "@railgun-community/cookbook";
 import { FallbackProviderJsonConfig, NetworkName } from "@railgun-community/shared-models";
-import { Groth16, getProver, setLoggers, startRailgunEngine } from "@railgun-community/wallet";
+import { getProver, setLoggers, startRailgunEngine } from "@railgun-community/wallet";
+import Groth16 from "@railgun-community/wallet";
 import { loadProvider } from "@railgun-community/wallet";
 import LevelDB from "level-js";
 import groth16 from "snarkjs";

@@ -2,10 +2,10 @@ import React, { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { FormOutlined, ManOutlined, UserOutlined } from "@ant-design/icons";
 import { Bars3Icon, BugAntIcon, MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
-import { FormOutlined, ManOutlined, UserOutlined } from "@ant-design/icons";
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
   const router = useRouter();
@@ -48,11 +48,16 @@ export const Header = () => {
       </li>
       <li>
         <NavLink href="/dashboard">
-          <UserOutlined  className="h-4 w-4" />
-         Dashboard
+          <UserOutlined className="h-4 w-4" />
+          Dashboard
         </NavLink>
       </li>
-     
+      <li>
+        <NavLink href="/recipe_test">
+          <UserOutlined className="h-4 w-4" />
+          Recipe_test
+        </NavLink>
+      </li>
     </>
   );
 

@@ -1,6 +1,9 @@
 // main.ts
 import { createArtifactStore } from "./create-artifact-store";
-import { FallbackProviderJsonConfig, NetworkName } from "@railgun-community/shared-models";
+import {
+  FallbackProviderJsonConfig,
+  NetworkName,
+} from "@railgun-community/cookbook/node_modules/@railgun-community/shared-models";
 import { setLoggers, startRailgunEngine } from "@railgun-community/wallet";
 import { loadProvider } from "@railgun-community/wallet";
 import LevelDB from "level-js";
